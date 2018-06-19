@@ -1,0 +1,59 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+### R packages
+
+```{r echo=FALSE}
+library(rdataretriever)
+library(dplyr)
+library(ggplot2)
+```
+
+### Portal
+
+```{r}
+if(!file.exists("../data/raw/portal_dev_rodent_trapping.csv")){
+  rdataretriever::install(dataset = "portal-dev", connection = "csv", data_dir = "data/raw/")
+}
+```
+Download all Portal data using dataretriever if it isn't already. 
+```{r}
+portal_occurrences = read.csv("../data/raw/portal_dev_rodent.csv")
+dim(portal_occurrences)
+head(portal_occurrences)
+```
+Read in Portal occurrence data. 
+```{r}
+portal_species = read.csv("../data/raw/portal_dev_rodent_species.csv")
+portal_species
+```
+Read in species data to remove non-rodent species from occurrence data. 
+```{r}
+table(portal_species$rodent)
+rodent_list = portal_species %>% 
+  filter(rodent == 1)
+rodent_list
+```
+Generate list of rodent species. 
+```{r}
+by_sp_yr = portal_occurrences %>% 
+  filter(!is.na(wgt), !is.na(species), species %in% rodent_list$species_code) %>% 
+  group_by(species, yr) %>% 
+  summarize(mass_mean = mean(wgt), 
+            mass_sd = sd(wgt))
+by_sp_yr
+```
+Create new dataframe containing mean and standard deviation of each species' mass for each year, 
+removing rows with no weight or no species ID and retaining only rodents. 
+
+The minimum mean mass is `r min(by_sp_yr$mass_mean)` and max is `r max(by_sp_yr$mass_mean)`. 
+There are `r length(unique(by_sp_yr$species))` species across `r length(unique(by_sp_yr$yr))` years. 
+```{r}
+ggplot(by_sp_yr, aes(x = yr, y = mass_mean)) +
+  geom_errorbar(aes(ymin = mass_mean - mass_sd, ymax = mass_mean + mass_sd)) +
+  geom_point() +
+  facet_wrap(~species, scale = "free_y")
+```
+Plot mass mean and sd by species across years.
