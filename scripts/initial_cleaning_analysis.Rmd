@@ -11,7 +11,13 @@ library(dplyr)
 library(ggplot2)
 ```
 
-### Portal
+### Dataset 1: Portal
+
+#### TODO
+
+* Retain only adults; age column == Z? 
+* Retain each individual only once? 
+* Choose which experimental treatments to use
 
 ```{r}
 if(!file.exists("../data/raw/portal_dev_rodent_trapping.csv")){
@@ -24,7 +30,15 @@ portal_occurrences = read.csv("../data/raw/portal_dev_rodent.csv")
 dim(portal_occurrences)
 head(portal_occurrences)
 ```
-Read in Portal occurrence data. 
+Read in Portal mammal occurrence data. 
+
+```{r}
+#colnames(portal_occurrences)
+unique(portal_occurrences$age)
+head(unique(portal_occurrences$tag), n = 20)
+head(unique(portal_occurrences$ltag), n = 20)
+```
+Start looking at age class and tags for each occurrence. 
 ```{r}
 portal_species = read.csv("../data/raw/portal_dev_rodent_species.csv")
 portal_species
@@ -51,9 +65,51 @@ removing rows with no weight or no species ID and retaining only rodents.
 The minimum mean mass is `r min(by_sp_yr$mass_mean)` and max is `r max(by_sp_yr$mass_mean)`. 
 There are `r length(unique(by_sp_yr$species))` species across `r length(unique(by_sp_yr$yr))` years. 
 ```{r}
-ggplot(by_sp_yr, aes(x = yr, y = mass_mean)) +
+ggplot(data = by_sp_yr, aes(x = yr, y = mass_mean)) +
   geom_errorbar(aes(ymin = mass_mean - mass_sd, ymax = mass_mean + mass_sd)) +
   geom_point() +
   facet_wrap(~species, scale = "free_y")
 ```
 Plot mass mean and sd by species across years.
+
+### Dataset 2: Fray Jorge
+
+##### Notes
+
+* [Mammal metadata](http://www.esapubs.org/archive/ecol/E094/084/Fray_Jorge_Small_Mammal_Metadata.php) 
+from ESA Ecological Archives
+
+#### TODO
+
+* Separate month and year (mo) into separate columns
+* Get corresponding species names for species code column (sp) from Table 2 in
+[metadata](http://www.esapubs.org/archive/ecol/E094/084/Fray_Jorge_Small_Mammal_Metadata.php)
+* Double check that mass column (wt) is in grams
+* Data only goes to 2005, but the project has been funded since then; are there more years? 
+* Determine if precip data also contains temperature
+* Choose which experimental treatments to use (trt col)
+* Retain only adults (sst column?) 
+* Retain each individual only once (AnimalID col)? 
+
+```{r}
+if(!file.exists("../data/raw/fray_jorge_ecology_mammals.csv")){
+  rdataretriever::install(dataset = "fray-jorge-ecology", connection = "csv", data_dir = "data/raw")
+}
+```
+Download all Fray Jorge data using dataretriever if it isn't already. 
+```{r}
+fray_occurrences = read.csv("../data/raw/fray_jorge_ecology_mammals.csv")
+dim(fray_occurrences)
+head(fray_occurrences)
+```
+Read in Fray Jorge mammal occurrence data. 
+```{r}
+colnames(fray_occurrences)
+range(fray_occurrences$record_date)
+```
+Explore column contents of Fray Jorge occurrences. 
+```{r}
+range(fray_occurrences$mo)
+range(nchar(fray_occurrences$mo))
+```
+Check out column combining month and year. 
