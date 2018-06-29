@@ -9,6 +9,8 @@ output: html_notebook
 library(rdataretriever)
 library(dplyr)
 library(ggplot2)
+library(tidyr)
+library(testthat)
 ```
 
 ### Dataset 1: Portal
@@ -113,3 +115,55 @@ range(fray_occurrences$mo)
 range(nchar(fray_occurrences$mo))
 ```
 Check out column combining month and year. 
+
+```{r}
+fray_occurrences_test = fray_occurrences %>% 
+  separate(mo, into = c("year", "month"), sep = 4, remove = FALSE)
+#tail(fray_occurrences_test)
+range(fray_occurrences_test$year)
+range(nchar(fray_occurrences_test$year))
+range(fray_occurrences_test$month)
+range(nchar(fray_occurrences_test$month))
+```
+Separate mo column into year and month columns. 
+```{r}
+expect_that(10, equals(10))
+expect_equal(10, 10)
+expect_that(fray_occurrences_test, is_a("data.frame"))
+expect_is(fray_occurrences_test, "data.frame")
+expect_that(min(nchar(fray_occurrences_test$year)), equals(4))
+expect_equal(min(nchar(fray_occurrences_test$year)), 4)
+expect_that(max(nchar(fray_occurrences_test$year)), equals(4))
+expect_equal(max(nchar(fray_occurrences_test$year)), 4)
+```
+Experimenting with testing for splitting mo column up. 
+
+##### Tests to include
+
+* Year values are in reasonable range
+* Month values are in reasonable range (between 1 and 12, inclusive)
+
+```{r}
+library(stringr)
+
+context("String length")
+
+test_that("str_length is number of characters", {
+  expect_that(str_length("a"), equals(1))
+  expect_that(str_length("ab"), equals(2))
+  expect_that(str_length("abc"), equals(3))
+})
+
+test_that("str_length of missing is missing", {
+  expect_that(str_length(NA), equals(NA_integer_))
+  expect_that(str_length(c(NA, 1)), equals(c(NA, 1)))
+  expect_that(str_length("NA"), equals(2))
+})
+
+test_that("str_length of factor is length of level", {
+  expect_that(str_length(factor("a")), equals(1))
+  expect_that(str_length(factor("ab")), equals(2))
+  expect_that(str_length(factor("abc")), equals(3))
+})
+```
+Examples from `testthat` [documentation](https://journal.r-project.org/archive/2011/RJ-2011-002/RJ-2011-002.pdf). 
