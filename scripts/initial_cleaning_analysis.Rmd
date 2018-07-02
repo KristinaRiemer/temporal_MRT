@@ -22,13 +22,13 @@ library(testthat)
 * Choose which experimental treatments to use
 
 ```{r}
-if(!file.exists("../data/raw/portal_dev_rodent_trapping.csv")){
-  rdataretriever::install(dataset = "portal-dev", connection = "csv", data_dir = "data/raw/")
+if(!file.exists("../data/raw_portal/portal_dev_rodent_trapping.csv")){
+  rdataretriever::install(dataset = "portal-dev", connection = "csv", data_dir = "../data/raw_portal/")
 }
 ```
 Download all Portal data using dataretriever if it isn't already. 
 ```{r}
-portal_occurrences = read.csv("../data/raw/portal_dev_rodent.csv")
+portal_occurrences = read.csv("../data/raw_portal/portal_dev_rodent.csv")
 dim(portal_occurrences)
 head(portal_occurrences)
 ```
@@ -42,7 +42,7 @@ head(unique(portal_occurrences$ltag), n = 20)
 ```
 Start looking at age class and tags for each occurrence. 
 ```{r}
-portal_species = read.csv("../data/raw/portal_dev_rodent_species.csv")
+portal_species = read.csv("../data/raw_portal/portal_dev_rodent_species.csv")
 portal_species
 ```
 Read in species data to remove non-rodent species from occurrence data. 
@@ -94,13 +94,13 @@ from ESA Ecological Archives
 * Retain each individual only once (AnimalID col)? 
 
 ```{r}
-if(!file.exists("../data/raw/fray_jorge_ecology_mammals.csv")){
-  rdataretriever::install(dataset = "fray-jorge-ecology", connection = "csv", data_dir = "data/raw")
+if(!file.exists("../data/raw_frayjorge/fray_jorge_ecology_mammals.csv")){
+  rdataretriever::install(dataset = "fray-jorge-ecology", connection = "csv", data_dir = "../data/raw_frayjorge/")
 }
 ```
 Download all Fray Jorge data using dataretriever if it isn't already. 
 ```{r}
-fray_occurrences = read.csv("../data/raw/fray_jorge_ecology_mammals.csv")
+fray_occurrences = read.csv("../data/raw_frayjorge/fray_jorge_ecology_mammals.csv")
 dim(fray_occurrences)
 head(fray_occurrences)
 ```
@@ -121,3 +121,33 @@ fray_occurrences = fray_occurrences %>%
   separate(mo, into = c("year", "month"), sep = 4, remove = FALSE, convert = TRUE)
 ```
 Separate mo column into year and month columns. 
+
+### Dataset 3: Thibault et al., 2011
+
+Ecological Archives documentation of data [here](http://esapubs.org/archive/ecol/E092/201/). 
+
+```{r}
+if(!file.exists("../data/raw_thibault/mammal_community_db_communities.csv")){
+  rdataretriever::install(dataset = "mammal-community-db", connection = "csv", data_dir = "../data/raw_thibault/")
+}
+```
+Download all data from Thibault data paper using dataretriever if it isn't already. 
+
+```{r}
+thibault_df = read.csv("../data/raw_thibault/mammal_community_db_communities.csv")
+head(thibault_df)
+```
+
+```{r}
+dim(thibault_df)
+length(which(!is.na(thibault_df$mass)))
+```
+
+```{r}
+thibault_df_mass = thibault_df %>% 
+  filter(!is.na(mass))
+thibault_df_mass
+```
+Of `r length(unique(thibault_df$site_id))` sites in the entire dataset,
+`r length(unique(thibault_df_mass$site_id))` have some mass measures. For sites
+with masses, do all occurrences have mass values? 
