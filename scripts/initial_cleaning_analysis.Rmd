@@ -1,11 +1,11 @@
 ---
-title: "R Notebook"
+title: "Exploration of Datasets for Temporal MRT Project"
 output: html_notebook
 ---
 
 ### R packages
 
-```{r echo=FALSE}
+```{r echo=TRUE}
 library(rdataretriever)
 library(dplyr)
 library(ggplot2)
@@ -83,7 +83,7 @@ from ESA Ecological Archives
 
 #### TODO
 
-* Separate month and year (mo) into separate columns
+* Choose which experimental treatments to use
 * Get corresponding species names for species code column (sp) from Table 2 in
 [metadata](http://www.esapubs.org/archive/ecol/E094/084/Fray_Jorge_Small_Mammal_Metadata.php)
 * Double check that mass column (wt) is in grams
@@ -99,32 +99,54 @@ if(!file.exists("../data/raw_frayjorge/fray_jorge_ecology_mammals.csv")){
 }
 ```
 Download all Fray Jorge data using dataretriever if it isn't already. 
+
+Note: they use periods for missing data
 ```{r}
-fray_occurrences = read.csv("../data/raw_frayjorge/fray_jorge_ecology_mammals.csv")
+fray_occurrences = read.csv("../data/raw_frayjorge/fray_jorge_ecology_mammals.csv", na.strings = ".")
 dim(fray_occurrences)
 head(fray_occurrences)
 ```
 Read in Fray Jorge mammal occurrence data. 
 ```{r}
-colnames(fray_occurrences)
-range(fray_occurrences$record_date)
-```
-Explore column contents of Fray Jorge occurrences. 
-```{r}
-range(fray_occurrences$mo)
-range(nchar(fray_occurrences$mo))
-```
-Check out column combining month and year. 
-
-```{r}
 fray_occurrences = fray_occurrences %>% 
   separate(mo, into = c("year", "month"), sep = 4, remove = FALSE, convert = TRUE)
 ```
 Separate mo column into year and month columns. 
+```{r}
+by_sp_yr_fray = fray_occurrences %>% 
+  filter(!is.na(wt), !is.na(sp)) %>% 
+  group_by(sp, year) %>% 
+  summarize(mass_mean = mean(wt), 
+            mass_sd = sd(wt))
+by_sp_yr_fray
+```
+Create new dataframe containing mean and standard deviation of each species' mass for each year, 
+removing rows with no weight or no species ID. 
+
+The minimum mean mass is `r min(by_sp_yr_fray$mass_mean)` and max is `r max(by_sp_yr_fray$mass_mean)`. 
+There are `r length(unique(by_sp_yr_fray$sp))` species across `r length(unique(by_sp_yr_fray$year))` years. 
+```{r}
+ggplot(data = by_sp_yr_fray, aes(x = year, y = mass_mean)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = mass_mean - mass_sd, ymax = mass_mean + mass_sd)) +
+  facet_wrap(~sp, scales = "free_y")
+```
+Plot mass mean and sd by species across years.
+```{r}
+ggplot(fray_occurrences, aes(x = year)) +
+  geom_bar() +
+  facet_wrap(~sp, scales = "free_y")
+```
+Plot number of individuals of each species across years. 
 
 ### Dataset 3: Thibault et al., 2011
 
 Ecological Archives documentation of data [here](http://esapubs.org/archive/ecol/E092/201/). 
+
+#### TODO
+
+* Determine if there is even enough data (number of individuals, year range) here to use
+
 
 ```{r}
 if(!file.exists("../data/raw_thibault/mammal_community_db_communities.csv")){
