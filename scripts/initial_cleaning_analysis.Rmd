@@ -11,7 +11,39 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(testthat)
+library(ncdf4)
 ```
+
+### Temperature data
+
+Requirements: 
+
+* Global in extent
+* Year range of 1950-now
+* Fairly fine spatial resolution
+
+**Berkeley Earth** dataset includes all of these: 
+
+* [URL](http://berkeleyearth.org/data/)
+* Monthly Land, 1* x 1* Latitude-Longitude Grid
+* Total global range is ~1890 to 2013
+* 1 degree x 1 degree latitude/longitude grid
+
+For what this means, see the red grid around Portal
+
+![](../portal_map_grid.png)
+
+```{r}
+if(!file.exists("../data/temperature/Complete_TAVG_LatLong1.nc")){
+  download.file("http://berkeleyearth.lbl.gov/auto/Global/Gridded/Complete_TAVG_LatLong1.nc", "../data/temperature/Complete_TAVG_LatLong1.nc")
+}
+```
+
+```{r}
+temp = nc_open("../data/temperature/Complete_TAVG_LatLong1.nc")
+temp
+```
+
 
 ### Dataset 1: Portal
 
