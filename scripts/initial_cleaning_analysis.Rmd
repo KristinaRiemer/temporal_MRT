@@ -16,6 +16,10 @@ library(ncdf4)
 
 ### Temperature data
 
+#### TODO
+
+* Create test for reasonable temp range for Florida
+
 Requirements: 
 
 * Global in extent
@@ -29,7 +33,7 @@ Requirements:
 * Total global range is ~1890 to 2013
 * 1 degree x 1 degree latitude/longitude grid
 
-For what this means, see the red grid around Portal
+For what this grid size means, see the red grid around Portal
 
 ![](../portal_map_grid.png)
 
@@ -38,12 +42,33 @@ if(!file.exists("../data/temperature/Complete_TAVG_LatLong1.nc")){
   download.file("http://berkeleyearth.lbl.gov/auto/Global/Gridded/Complete_TAVG_LatLong1.nc", "../data/temperature/Complete_TAVG_LatLong1.nc")
 }
 ```
-
+Download Berkeley Earth temperature data using dataretriever if it isn't already. 
 ```{r}
 temp = nc_open("../data/temperature/Complete_TAVG_LatLong1.nc")
-temp
 ```
+Read in temperature data. 
 
+#### Metadata notes
+
+* Documentation [here](http://berkeleyearth.lbl.gov/auto/Global/Gridded/Gridded_README.txt)
+* Latitude and longitude "values are in degrees, with positive values used for 
+Northern/Eastern Hemisphere"
+* Lat and lon are center of grid box; need to find closest one for each site
+* Time is a single value, with year, decimal point, then fraction of year for
+month midpoint
+  * E.g., "1981.125 indicates February 1981", or .125 x 12 == 1.5
+* Temperature is temp anomaly value (?), maybe multiplied by lat and lon?
+* What's the baseline for the anomaly? 
+* Missing temp value is NaN; does R read this in correctly? 
+* land_mask is amount of cell that is land
+* Climatology variable includes actual temperature, but is average across each
+month from 1951-1980? 
+* No uncertainty
+```{r}
+attributes(temp)$names
+```
+Temperature file has `r temp$nvars` variables, `r temp$ndims` dimensions and 
+`r temp$natts` NetCDF attributes. 
 
 ### Dataset 1: Portal
 
