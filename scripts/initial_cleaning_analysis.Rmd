@@ -53,6 +53,7 @@ Read in temperature data.
 * Documentation [here](http://berkeleyearth.lbl.gov/auto/Global/Gridded/Gridded_README.txt)
 * Latitude and longitude "values are in degrees, with positive values used for 
 Northern/Eastern Hemisphere"
+    * United States is something like -100, 40
 * Lat and lon are center of grid box; need to find closest one for each site
 * Time is a single value, with year, decimal point, then fraction of year for
 month midpoint
@@ -67,8 +68,27 @@ month from 1951-1980?
 ```{r}
 attributes(temp)$names
 ```
-Temperature file has `r temp$nvars` variables, `r temp$ndims` dimensions and 
-`r temp$natts` NetCDF attributes. 
+Temperature file contents (all described in metadata): 
+
+* `r temp$nvars` variables = `r attributes(temp$var)$names`
+    * Will use `r attributes(temp$var)$names[2]`?
+* `r temp$ndims` dimensions = `r attributes(temp$dim)$names`
+* `r temp$natts` NetCDF attributes = general info about dataset
+* Temperature dataset attributes are `r ncatt_get(temp, attributes(temp$var)$names[2])`
+* Temperature dataset dimensions in order are
+    1. `r attributes(temp$dim)$names[1]` (limit: `r dim(temp_variable_all)[1]`)
+    2. `r attributes(temp$dim)$names[2]` (limit: `r dim(temp_variable_all)[2]`)
+    3. `r attributes(temp$dim)$names[3]` (limit: `r dim(temp_variable_all)[3]`)
+
+```{r}
+temp_variable_all = ncvar_get(temp, attributes(temp$var)$names[2])
+```
+Generate temperature variable dataset. 
+```{r}
+dim(temp_variable_all)[1]
+attributes(temp$dim)$names
+temp_variable_all[-100, 40, 1981.125]
+```
 
 ### Dataset 1: Portal
 
