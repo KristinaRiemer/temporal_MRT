@@ -261,3 +261,24 @@ thibault_df_mass
 Of `r length(unique(thibault_df$site_id))` sites in the entire dataset,
 `r length(unique(thibault_df_mass$site_id))` have some mass measures. For sites
 with masses, do all occurrences have mass values? 
+
+### Site locations
+
+#### TODO
+
+* Get latitude and longitude for each dataset's site
+* Document source for each of these
+
+*Portal*
+
+```{r}
+# download.file("https://esajournals.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1890%2F15-2115.1&file=ecy1360-sup-0001-DataS1.zip", 
+#               "../data/raw_portal/ecy1360-sup-0001-datas1")
+unzip("../data/raw_portal/ecy1360-sup-0001-datas1.zip", exdir = "../data/raw_portal/")
+
+# if(!file.exists("../data/temperature/Complete_TAVG_LatLong1.nc")){
+#   download.file("http://berkeleyearth.lbl.gov/auto/Global/Gridded/Complete_TAVG_LatLong1.nc", "../data/temperature/Complete_TAVG_LatLong1.nc")
+# }
+```
+
+
