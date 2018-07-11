@@ -1,5 +1,5 @@
 ---
-title: "Exploration of Datasets for Temporal MRT Project"
+title: "Temporal MRT Project: analysis pipeline with two datasets"
 output: html_notebook
 ---
 
@@ -18,7 +18,7 @@ library(ncdf4)
 
 #### TODO
 
-* Create test for reasonable temp range for Florida
+* Create test for reasonable temp range for Florida location
 
 Requirements: 
 
@@ -28,7 +28,7 @@ Requirements:
 
 **Berkeley Earth** dataset includes all of these: 
 
-* [URL](http://berkeleyearth.org/data/)
+* [Website](http://berkeleyearth.org/data/)
 * Monthly Land, 1* x 1* Latitude-Longitude Grid
 * Total global range is ~1890 to 2013
 * 1 degree x 1 degree latitude/longitude grid
@@ -54,17 +54,20 @@ Read in temperature data.
 * Latitude and longitude "values are in degrees, with positive values used for 
 Northern/Eastern Hemisphere"
     * United States is something like -100, 40
-* Lat and lon are center of grid box; need to find closest one for each site
+* Lat and lon are center of grid box; need to find closest one for each site (rounding?)
+    * Possibly generate map with each location and respective grid? 
 * Time is a single value, with year, decimal point, then fraction of year for
 month midpoint
-  * E.g., "1981.125 indicates February 1981", or .125 x 12 == 1.5
+    * E.g., "1981.125 indicates February 1981", or .125 x 12 == 1.5
+    * Create table of these values with corresponding months and years
 * Temperature is temp anomaly value (?), maybe multiplied by lat and lon?
-* What's the baseline for the anomaly? 
+* What's the baseline/reference for the anomaly? 
 * Missing temp value is NaN; does R read this in correctly? 
 * land_mask is amount of cell that is land
 * Climatology variable includes actual temperature, but is average across each
 month from 1951-1980? 
 * No uncertainty
+* "Compression level 9"?
 ```{r}
 attributes(temp)$names
 ```
@@ -84,10 +87,18 @@ Temperature file contents (all described in metadata):
 temp_variable_all = ncvar_get(temp, attributes(temp$var)$names[2])
 ```
 Generate temperature variable dataset. 
+
 ```{r}
-dim(temp_variable_all)[1]
-attributes(temp$dim)$names
-temp_variable_all[-100, 40, 1981.125]
+ncatt_get(temp, attributes(temp$dim)$names[3])
+```
+
+
+```{r}
+temp_variable_all[105, 40, 100]
+```
+What are the value ranges of the three dimensions? 
+```{r}
+nc_close(temp)
 ```
 
 ### Dataset 1: Portal
