@@ -12,6 +12,7 @@ library(ggplot2)
 library(tidyr)
 library(testthat)
 library(ncdf4)
+library(rgdal)
 ```
 
 ### Temperature data
@@ -98,8 +99,9 @@ temp_variable_all[105, 40, 100]
 ```
 What are the value ranges of the three dimensions? 
 ```{r}
-nc_close(temp)
+#nc_close(temp)
 ```
+Closing temperature data throws error, but is a recommended step. 
 
 ### Dataset 1: Portal
 
@@ -268,8 +270,24 @@ with masses, do all occurrences have mass values?
 
 * Get latitude and longitude for each dataset's site
 * Document source for each of these
+* Convert normal lat/lon to temp grid lat/lon? 
+* Add test for UTM to lat/lon conversion for Portal? 
 
-*Portal*
+```{r}
+site_locations = data.frame()
+```
+Create empty dataframe that will store location values. 
+
+**Portal**
+
+Notes
+
+* From [Ernest et al., 2016](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/15-2115.1)
+* Couldn't find location information in retriever versions of Portal data
+
+#### TODO 
+* Convert coordinates from UTM to lat/lon
+* Exchange UTM coordinates for lat/lon in locations dataframe
 
 ```{r}
 # download.file("https://esajournals.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1890%2F15-2115.1&file=ecy1360-sup-0001-DataS1.zip", 
@@ -280,5 +298,24 @@ unzip("../data/raw_portal/ecy1360-sup-0001-datas1.zip", exdir = "../data/raw_por
 #   download.file("http://berkeleyearth.lbl.gov/auto/Global/Gridded/Complete_TAVG_LatLong1.nc", "../data/temperature/Complete_TAVG_LatLong1.nc")
 # }
 ```
-
-
+Download data containing Portal coordinates. 
+```{r}
+portal_coords = read.csv("../data/raw_portal/Portal_UTMCoords.csv")
+```
+Read in particular dataset with coordinates. 
+```{r}
+portal_mean_east = mean(portal_coords$east) #lon
+portal_mean_north = mean(portal_coords$north) #lat
+#portal_mean_UTM = SpatialPoints(c(portal_mean_east, portal_mean_north), proj4string = ("+proj=utm +zone= +datum=WGS84"))
+```
+Generate variables for each coordinate direction. 
+Convert UTM to lat/lon. Expect Portal to be about -109.063, 31.9107. 
+UTM zone 12
+```{r}
+site_locations = site_locations %>% 
+  bind_rows(c(site_name = "Portal", 
+              lon = portal_mean_east, 
+              lat = portal_mean_north))
+site_locations
+```
+Add Portal lat/lon to locations dataframe. 
