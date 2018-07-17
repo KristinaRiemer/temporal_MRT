@@ -286,8 +286,7 @@ Notes
 * Couldn't find location information in retriever versions of Portal data
 
 #### TODO 
-* Convert coordinates from UTM to lat/lon
-* Exchange UTM coordinates for lat/lon in locations dataframe
+* Add in if statement to prevent downloading and unzipping coordinates file every time
 
 ```{r}
 # download.file("https://esajournals.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1890%2F15-2115.1&file=ecy1360-sup-0001-DataS1.zip", 
@@ -304,9 +303,8 @@ portal_coords = read.csv("../data/raw_portal/Portal_UTMCoords.csv")
 ```
 Read in particular dataset with coordinates. 
 ```{r}
-portal_mean_east = mean(portal_coords$east) #lon
-portal_mean_north = mean(portal_coords$north) #lat
-#portal_mean_UTM = SpatialPoints(c(portal_mean_east, portal_mean_north), proj4string = ("+proj=utm +zone= +datum=WGS84"))
+portal_mean_UTM = SpatialPoints(cbind(mean(portal_coords$east), mean(portal_coords$north)), proj4string = CRS("+proj=utm +zone=12 +datum=WGS84"))
+portal_mean_latlon = spTransform(portal_mean_UTM, CRS("+proj=longlat +datum=WGS84"))
 ```
 Generate variables for each coordinate direction. 
 Convert UTM to lat/lon. Expect Portal to be about -109.063, 31.9107. 
@@ -314,8 +312,19 @@ UTM zone 12
 ```{r}
 site_locations = site_locations %>% 
   bind_rows(c(site_name = "Portal", 
-              lon = portal_mean_east, 
-              lat = portal_mean_north))
+              lon = portal_mean_latlon$coords.x1, 
+              lat = portal_mean_latlon$coords.x2))
 site_locations
 ```
 Add Portal lat/lon to locations dataframe. 
+
+**Fray Jorge**
+
+Notes
+
+* From "Materials and Methods" section in Aguilera et al. (2015)
+![](../fray_jorge_location.png)
+
+#### TODO
+
+* Convert degree minute seconds to decimal degrees
