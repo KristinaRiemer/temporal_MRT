@@ -11,3 +11,9 @@ test_that("generate correct month and year columns in Fray Jorge mammal data", {
 })
 
 # Run all tests with test_file("scripts/test_initial_cleaning_analysis.R")
+
+context("converting spatial coordinates")
+
+test_that("conversion from degree minute second to decimal is correct", {
+  expect_equal(round(deg_min_sec_to_dec(40, 20, 50, "S"), digits = 5), round(-40.34722, digits = 5))
+})
