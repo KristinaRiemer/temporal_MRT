@@ -271,31 +271,31 @@ with masses, do all occurrences have mass values?
 * Get latitude and longitude for each dataset's site
 * Document source for each of these
 * Convert normal lat/lon to temp grid lat/lon? 
-* Add test for UTM to lat/lon conversion for Portal? 
 
 ```{r}
 site_locations = data.frame()
 ```
 Create empty dataframe that will store location values. 
 
-**Portal**
+#### Portal
 
 Notes
 
 * From [Ernest et al., 2016](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/15-2115.1)
 * Couldn't find location information in retriever versions of Portal data
+* Expect Portal to be about -109.063, 31.9107
+* In UTM zone 12
 
 #### TODO 
-* Add in if statement to prevent downloading and unzipping coordinates file every time
+
+* Add test for UTM to lat/lon conversion?
 
 ```{r}
-# download.file("https://esajournals.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1890%2F15-2115.1&file=ecy1360-sup-0001-DataS1.zip", 
-#               "../data/raw_portal/ecy1360-sup-0001-datas1")
-unzip("../data/raw_portal/ecy1360-sup-0001-datas1.zip", exdir = "../data/raw_portal/")
-
-# if(!file.exists("../data/temperature/Complete_TAVG_LatLong1.nc")){
-#   download.file("http://berkeleyearth.lbl.gov/auto/Global/Gridded/Complete_TAVG_LatLong1.nc", "../data/temperature/Complete_TAVG_LatLong1.nc")
-# }
+if(!file.exists("../data/raw_portal/Portal_UTMCoords.csv")){
+  download.file("https://esajournals.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1890%2F15-2115.1&file=ecy1360-sup-0001-DataS1.zip", 
+               "../data/raw_portal/ecy1360-sup-0001-datas1.zip")
+  unzip("../data/raw_portal/ecy1360-sup-0001-datas1.zip", exdir = "../data/raw_portal/")
+}
 ```
 Download data containing Portal coordinates. 
 ```{r}
@@ -306,9 +306,7 @@ Read in particular dataset with coordinates.
 portal_mean_UTM = SpatialPoints(cbind(mean(portal_coords$east), mean(portal_coords$north)), proj4string = CRS("+proj=utm +zone=12 +datum=WGS84"))
 portal_mean_latlon = as.data.frame(spTransform(portal_mean_UTM, CRS("+proj=longlat +datum=WGS84")))
 ```
-Generate variables for each coordinate direction. 
-Convert UTM to lat/lon. Expect Portal to be about -109.063, 31.9107. 
-UTM zone 12
+Generate variables for each coordinate direction, then convert from UTM to lat/lon. 
 ```{r}
 site_locations = site_locations %>% 
   bind_rows(c(site_name = "Portal", 
@@ -318,7 +316,7 @@ site_locations
 ```
 Add Portal lat/lon to locations dataframe. 
 
-**Fray Jorge**
+#### Fray Jorge
 
 Notes
 
