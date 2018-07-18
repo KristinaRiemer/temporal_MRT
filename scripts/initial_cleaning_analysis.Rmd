@@ -20,6 +20,8 @@ library(rgdal)
 #### TODO
 
 * Create test for reasonable temp range for Florida location
+* Figure out baseline temperature anomaly value
+* Determine why, for coordinates and time, a list of length 359 is returned instead of a single value
 
 Requirements: 
 
@@ -43,7 +45,7 @@ if(!file.exists("../data/temperature/Complete_TAVG_LatLong1.nc")){
   download.file("http://berkeleyearth.lbl.gov/auto/Global/Gridded/Complete_TAVG_LatLong1.nc", "../data/temperature/Complete_TAVG_LatLong1.nc")
 }
 ```
-Download Berkeley Earth temperature data using dataretriever if it isn't already. 
+Download Berkeley Earth temperature data if it isn't already. 
 ```{r}
 temp = nc_open("../data/temperature/Complete_TAVG_LatLong1.nc")
 ```
@@ -63,6 +65,8 @@ month midpoint
     * Create table of these values with corresponding months and years
 * Temperature is temp anomaly value (?), maybe multiplied by lat and lon?
 * What's the baseline/reference for the anomaly? 
+    * "Anomalies relative to 1951-1980 mean", from "Video of Temperature Field" on main data page
+    * Where to get this mean from? 
 * Missing temp value is NaN; does R read this in correctly? 
 * land_mask is amount of cell that is land
 * Climatology variable includes actual temperature, but is average across each
