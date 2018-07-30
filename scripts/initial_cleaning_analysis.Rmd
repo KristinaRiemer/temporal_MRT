@@ -1,6 +1,8 @@
 ---
-title: "Temporal MRT Project: analysis pipeline with two datasets"
-output: html_notebook
+title: 'Temporal MRT Project: analysis pipeline with two datasets'
+output:
+  html_notebook: default
+  pdf_document: default
 ---
 
 ### R packages
@@ -29,83 +31,35 @@ Requirements:
 * Year range of 1950-now
 * Fairly fine spatial resolution
 
-**Berkeley Earth** dataset includes all of these: 
+**University of Delaware** dataset includes all of these: 
 
-* [Website](http://berkeleyearth.org/data/)
-* Monthly Land, 1* x 1* Latitude-Longitude Grid
-* Total global range is ~1890 to 2013
-* 1 degree x 1 degree latitude/longitude grid
+* [Website](https://www.esrl.noaa.gov/psd/data/gridded/data.UDel_AirT_Precip.html)
+* [Another website](https://climatedataguide.ucar.edu/climate-data/global-land-precipitation-and-temperature-willmott-matsuura-university-delaware)
+* Air Temperature Monthly Mean V4.01 Surface
+* Temporal range is monthly values for 1900-2014
+* 0.5 degree by 0.5 degree latitude-longitude grid
 
-For what this grid size means, see the red grid around Portal
+For what this grid size means, see the blue grid around Portal
+(red grid if 1 degree by 1 degree)
 
 ![](../portal_map_grid.png)
 
 ```{r}
-if(!file.exists("../data/temperature/Complete_TAVG_LatLong1.nc")){
-  download.file("http://berkeleyearth.lbl.gov/auto/Global/Gridded/Complete_TAVG_LatLong1.nc", "../data/temperature/Complete_TAVG_LatLong1.nc")
+if(!file.exists("../data/temperature/air.mon.mean.v401.nc")){
+  download.file("ftp://ftp.cdc.noaa.gov/Datasets/udel.airt.precip/air.mon.mean.v401.nc", "../data/temperature/air.mon.mean.v401.nc")
 }
 ```
-Download Berkeley Earth temperature data if it isn't already. 
+Download University of Delaware temperature data if it isn't already. 
 ```{r}
-temp = nc_open("../data/temperature/Complete_TAVG_LatLong1.nc")
+temp = nc_open("../data/temperature/air.mon.mean.v401.nc")
 ```
 Read in temperature data. 
+```{r}
+temp
+```
 
 #### Metadata notes
 
-* Documentation [here](http://berkeleyearth.lbl.gov/auto/Global/Gridded/Gridded_README.txt)
-* Latitude and longitude "values are in degrees, with positive values used for 
-Northern/Eastern Hemisphere"
-    * United States is something like -100, 40
-* Lat and lon are center of grid box; need to find closest one for each site (rounding?)
-    * Possibly generate map with each location and respective grid? 
-* Time is a single value, with year, decimal point, then fraction of year for
-month midpoint
-    * E.g., "1981.125 indicates February 1981", or .125 x 12 == 1.5
-    * Create table of these values with corresponding months and years
-* Temperature is temp anomaly value (?), maybe multiplied by lat and lon?
-* What's the baseline/reference for the anomaly? 
-    * "Anomalies relative to 1951-1980 mean", from "Video of Temperature Field" on main data page
-    * Where to get this mean from? 
-* Missing temp value is NaN; does R read this in correctly? 
-* land_mask is amount of cell that is land
-* Climatology variable includes actual temperature, but is average across each
-month from 1951-1980? 
-* No uncertainty
-* "Compression level 9"?
-```{r}
-attributes(temp)$names
-```
-Temperature file contents (all described in metadata): 
-
-* `r temp$nvars` variables = `r attributes(temp$var)$names`
-    * Will use `r attributes(temp$var)$names[2]`?
-* `r temp$ndims` dimensions = `r attributes(temp$dim)$names`
-* `r temp$natts` NetCDF attributes = general info about dataset
-* Temperature dataset attributes are `r ncatt_get(temp, attributes(temp$var)$names[2])`
-* Temperature dataset dimensions in order are
-    1. `r attributes(temp$dim)$names[1]` (limit: `r dim(temp_variable_all)[1]`)
-    2. `r attributes(temp$dim)$names[2]` (limit: `r dim(temp_variable_all)[2]`)
-    3. `r attributes(temp$dim)$names[3]` (limit: `r dim(temp_variable_all)[3]`)
-
-```{r}
-temp_variable_all = ncvar_get(temp, attributes(temp$var)$names[2])
-```
-Generate temperature variable dataset. 
-
-```{r}
-ncatt_get(temp, attributes(temp$dim)$names[3])
-```
-
-
-```{r}
-temp_variable_all[105, 40, 100]
-```
-What are the value ranges of the three dimensions? 
-```{r}
-#nc_close(temp)
-```
-Closing temperature data throws error, but is a recommended step. 
 
 ### Dataset 1: Portal
 
