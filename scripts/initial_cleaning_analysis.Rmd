@@ -57,9 +57,29 @@ Read in temperature data.
 ```{r}
 temp
 ```
+```{r}
+temp_variable_all = ncvar_get(temp, attributes(temp$var)$names)
+```
 
 #### Metadata notes
 
+* See [Expert Guidance page](https://climatedataguide.ucar.edu/climate-data/global-land-precipitation-and-temperature-willmott-matsuura-university-delaware) 
+on UCAR Climate Data Guide
+* See [metadata page](http://climate.geog.udel.edu/~climate/html_pages/Global2011/README.GlobalTsT2011.html)
+from NOAA page
+* Mostly compiled from different NOAA Global Historical Climatology Network (GHCN)
+* Point estimates instead of grid cell averages? 
+* Interpolation for grid node (i.e., center) for each 0.5 degree by 0.5 degree grid
+* Missing values indicated with large -999... number (-9.96920996838687e+36)
+* `r temp$nvars` variable = `r attributes(temp$var)$names`
+    * Missing data values is `r ncatt_get(temp, attributes(temp$var)$names)$missing_value`
+    * Actual range in temp values is `r ncatt_get(temp, attributes(temp$var)$names)$actual_range`
+    * Valid range in temp values is `r ncatt_get(temp, attributes(temp$var)$names)$valid_range`
+* `r temp$ndims` dimensions = `r attributes(temp$dim)$names`
+    * Max dimension limits are: 
+        1. `r attributes(temp$dim)$names[1]` (limit: `r dim(temp_variable_all)[1]`)
+        2. `r attributes(temp$dim)$names[2]` (limit: `r dim(temp_variable_all)[2]`)
+        3. `r attributes(temp$dim)$names[3]` (limit: `r dim(temp_variable_all)[3]`)
 
 ### Dataset 1: Portal
 
