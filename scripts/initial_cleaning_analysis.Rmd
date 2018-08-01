@@ -80,6 +80,47 @@ from NOAA page
         1. `r attributes(temp$dim)$names[1]` (limit: `r dim(temp_variable_all)[1]`)
         2. `r attributes(temp$dim)$names[2]` (limit: `r dim(temp_variable_all)[2]`)
         3. `r attributes(temp$dim)$names[3]` (limit: `r dim(temp_variable_all)[3]`)
+* Lat/lon dimension details
+    * [lon, lat]
+    * Coordinates are center point of grid cell
+        * e.g., far upper left grid is 0.25, 89.75
+        * e.g., far lower right grid is 359.75, 87.75
+    * Hemisphere orientation from map of Dec 2014 temps on NOAA page
+![](../map_dec14_website.png)
+        * Positive latitudes are northern hemisphere, negative are southern
+        * Longitudes from 0-180 are eastern hemisphere, from 180-360 are western hemisphere? 
+        * Test this by picking a point with the same coordinates in eastern and western hemisphere but one is in middle of ocean
+* Time dimension details
+    * Year range: 1900 - 2014
+    * 115 years x 12 months = 1380 time values total
+    * Where did actual range of 0 - 1007328 come from? 
+    * Selection of time values: 
+        * Jan 1900 = 1; Feb 1900 = 2; Dec 1900 = 11
+        * Jan 1901 = 12
+        * See function for converting from year + month in Python script
+* Extracting values
+    * Use temp_variable_all[lon, lat, time]
+    * Coordinate uses integer index values, not grid mid-point values? 
+    * Example is Denver in January 1901 (lon = , lat = 39.75, time = 12)
+* Map Dec '14 values? 
+
+```{r}
+dim(temp_variable_all)
+singleyear_allcoords = temp_variable_all[0:720, 0:360, 12]
+dim(singleyear_allcoords)
+range(singleyear_allcoords, na.rm = TRUE)
+singleyear_allcoords[1, 77]
+```
+```{r}
+singleyear_subsetcoords = temp_variable_all[715:720, 350:360, 1380]
+singleyear_subsetcoords
+```
+
+```{r}
+singleyear_subsetcoords2 = temp_variable_all[0.25, 89.75, 1380]
+singleyear_subsetcoords2
+```
+
 
 ### Dataset 1: Portal
 
