@@ -71,6 +71,7 @@ from NOAA page
 * Point estimates instead of grid cell averages? 
 * Interpolation for grid node (i.e., center) for each 0.5 degree by 0.5 degree grid
 * Missing values indicated with large -999... number (-9.96920996838687e+36)
+    * R automatically turned no values into NAs? 
 * `r temp$nvars` variable = `r attributes(temp$var)$names`
     * Missing data values is `r ncatt_get(temp, attributes(temp$var)$names)$missing_value`
     * Actual range in temp values is `r ncatt_get(temp, attributes(temp$var)$names)$actual_range`
@@ -85,10 +86,13 @@ from NOAA page
     * Coordinates are center point of grid cell
         * e.g., far upper left grid is 0.25, 89.75
         * e.g., far lower right grid is 359.75, 87.75
-    * Hemisphere orientation from map of Dec 2014 temps on NOAA page
+    * Hemisphere orientation from map of Dec 2014 temps on NOAA page?
 ![](../map_dec14_website.png)
         * Positive latitudes are northern hemisphere, negative are southern
         * Longitudes from 0-180 are eastern hemisphere, from 180-360 are western hemisphere? 
+        * Latitude is inverted? 
+            * Lat indices 0-180 are northern hemisphere, 180-360 are southern hemisphere
+            * Lon indices 0-360 are eastern hemisphere, 360-720 are western hemisphere
         * Test this by picking a point with the same coordinates in eastern and western hemisphere but one is in middle of ocean
 * Time dimension details
     * Year range: 1900 - 2014
@@ -102,7 +106,6 @@ from NOAA page
     * Use temp_variable_all[lon, lat, time]
     * Coordinate uses integer index values, not grid mid-point values? 
     * Example is Denver in January 1901 (lon = , lat = 39.75, time = 12)
-* Map Dec '14 values? 
 
 ```{r}
 dim(temp_variable_all)
@@ -120,7 +123,43 @@ singleyear_subsetcoords
 singleyear_subsetcoords2 = temp_variable_all[0.25, 89.75, 1380]
 singleyear_subsetcoords2
 ```
+```{r}
+singleyear_subsetcoords3 = temp_variable_all[0:50, 0:50, 1380]
+singleyear_subsetcoords3
+range(singleyear_subsetcoords3, na.rm = TRUE)
+```
 
+#### TODO
+
+* Plot all temps for a single year to determine hemisphere locations
+
+```{r}
+#temp_variable_all[0:720, 0:360, 1380]
+#temp_variable_all[210:220, 90:100, 1380]
+df_test = expand.grid(1:359, 1:719)
+#df_test = expand.grid(0:360, 0:720)
+names(df_test) = c("lat", "lon")
+df_test$temp = NA
+df_test
+```
+
+```{r}
+for(i in 1:nrow(df_test)){
+  df_test[i, "temp"] = temp_variable_all[df_test$lon[i], df_test$lat[i], 1380]
+}
+df_test
+```
+```{r}
+min(df_test$temp, na.rm = TRUE)
+max(df_test$temp, na.rm = TRUE)
+df_test %>% 
+  filter(lon == 320 & lat == 120)
+```
+
+```{r}
+ggplot(df_test, aes(lon, lat)) +
+  geom_tile(aes(fill = temp))
+```
 
 ### Dataset 1: Portal
 
