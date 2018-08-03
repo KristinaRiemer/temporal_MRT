@@ -134,6 +134,11 @@ range(singleyear_subsetcoords3, na.rm = TRUE)
 * Plot all temps for a single year to determine hemisphere locations
 
 ```{r}
+temp_variable_all
+```
+
+
+```{r}
 #temp_variable_all[0:720, 0:360, 1380]
 #temp_variable_all[210:220, 90:100, 1380]
 df_test = expand.grid(1:359, 1:719)
@@ -158,8 +163,20 @@ df_test %>%
 
 ```{r}
 ggplot(df_test, aes(lon, lat)) +
-  geom_tile(aes(fill = temp))
+  geom_tile(aes(fill = temp)) +
+  geom_vline(xintercept = 230) +
+  geom_hline(yintercept = 244)
 ```
+Actual dataset orientation. 
+```{r}
+ggplot(df_test, aes(lon, -lat)) +
+  geom_tile(aes(fill = temp)) +
+geom_vline(xintercept = 230) +
+  geom_hline(yintercept = -244)
+```
+Flipped correct dataset orientation. 
+
+
 
 ### Dataset 1: Portal
 
@@ -409,3 +426,38 @@ site_locations = site_locations %>%
 site_locations
 ```
 Add converted Fray Jorge coordinates to locations dataframe. 
+
+### Site temperatures
+
+#### TODO
+
+* Convert lat lon coordinates to grid coordinates
+* Look up all July (?) temperatures for each site
+* Test Portal temps against the on-site temperature measurements
+
+#### Notes
+
+* Conversions: 
+    * grid_lon = coord_lon * 2
+    * grid_lat = -((coord_lat - 90) * 2)
+
+```{r}
+lon_conversion = function(coord_lon){
+  grid_lon = coord_lon * 2
+  return(grid_lon)
+}
+lon_conversion(-58)
+```
+```{r}
+lat_conversion = function(coord_lat){
+  grid_lat = -((coord_lat - 90) * 2)
+  return(grid_lat)
+}
+```
+
+```{r}
+ggplot(df_test, aes(lon, lat)) +
+  geom_tile(aes(fill = temp)) +
+  geom_vline(xintercept = lon_conversion(-109)) +
+  geom_hline(yintercept = lat_conversion(31))
+```
