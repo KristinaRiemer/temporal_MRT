@@ -161,23 +161,6 @@ df_test %>%
   filter(lon == 320 & lat == 120)
 ```
 
-```{r}
-ggplot(df_test, aes(lon, lat)) +
-  geom_tile(aes(fill = temp)) +
-  geom_vline(xintercept = 230) +
-  geom_hline(yintercept = 244)
-```
-Actual dataset orientation. 
-```{r}
-ggplot(df_test, aes(lon, -lat)) +
-  geom_tile(aes(fill = temp)) +
-geom_vline(xintercept = 230) +
-  geom_hline(yintercept = -244)
-```
-Flipped correct dataset orientation. 
-
-
-
 ### Dataset 1: Portal
 
 #### TODO
@@ -443,21 +426,32 @@ Add converted Fray Jorge coordinates to locations dataframe.
 
 ```{r}
 lon_conversion = function(coord_lon){
-  grid_lon = coord_lon * 2
+  coord_lon_double = coord_lon * 2
+  if(coord_lon_double < 0){
+    grid_lon = 720 + coord_lon_double
+  } else {
+    grid_lon = coord_lon_double
+  }
   return(grid_lon)
 }
-lon_conversion(-58)
 ```
+
 ```{r}
 lat_conversion = function(coord_lat){
-  grid_lat = -((coord_lat - 90) * 2)
+  coord_lat_double = coord_lat * 2
+  grid_lat = 180 - coord_lat_double
   return(grid_lat)
 }
+```
+
+```{r}
+portal = c(lon_conversion(151), lat_conversion(-33))
+print(portal)
 ```
 
 ```{r}
 ggplot(df_test, aes(lon, lat)) +
   geom_tile(aes(fill = temp)) +
   geom_vline(xintercept = lon_conversion(-109)) +
-  geom_hline(yintercept = lat_conversion(31))
+  geom_hline(yintercept = lat_conversion(32))
 ```
