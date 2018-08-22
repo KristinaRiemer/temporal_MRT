@@ -110,56 +110,26 @@ from NOAA page
 ```{r}
 dim(temp_variable_all)
 singleyear_allcoords = temp_variable_all[0:720, 0:360, 12]
-dim(singleyear_allcoords)
-range(singleyear_allcoords, na.rm = TRUE)
-singleyear_allcoords[1, 77]
-```
-```{r}
-singleyear_subsetcoords = temp_variable_all[715:720, 350:360, 1380]
-singleyear_subsetcoords
 ```
 
 ```{r}
-singleyear_subsetcoords2 = temp_variable_all[0.25, 89.75, 1380]
-singleyear_subsetcoords2
-```
-```{r}
-singleyear_subsetcoords3 = temp_variable_all[0:50, 0:50, 1380]
-singleyear_subsetcoords3
-range(singleyear_subsetcoords3, na.rm = TRUE)
-```
-
-#### TODO
-
-* Plot all temps for a single year to determine hemisphere locations
-
-```{r}
-temp_variable_all
-```
-
-
-```{r}
-#temp_variable_all[0:720, 0:360, 1380]
-#temp_variable_all[210:220, 90:100, 1380]
-df_test = expand.grid(1:359, 1:719)
-#df_test = expand.grid(0:360, 0:720)
-names(df_test) = c("lat", "lon")
-df_test$temp = NA
-df_test
-```
-
-```{r}
-for(i in 1:nrow(df_test)){
-  df_test[i, "temp"] = temp_variable_all[df_test$lon[i], df_test$lat[i], 1380]
+if(!file.exists("../data/temperature/single_year_temp.csv")){
+  single_year_temp = expand.grid(1:359, 1:719)
+  names(single_year_temp) = c("lat", "lon")
+  single_year_temp$temp = NA
+  for(i in 1:nrow(single_year_temp)){
+    single_year_temp[i, "temp"] = temp_variable_all[single_year_temp$lon[i], single_year_temp$lat[i], 1380]
+  }
+  write.csv(single_year_temp, "../data/temperature/single_year_temp.csv")
 }
-df_test
 ```
+Get and save as CSV a single year of the temperature dataset for plotting purposes. 
+
 ```{r}
-min(df_test$temp, na.rm = TRUE)
-max(df_test$temp, na.rm = TRUE)
-df_test %>% 
-  filter(lon == 320 & lat == 120)
+single_year_temp = read.csv("../data/temperature/single_year_temp.csv")
+single_year_temp
 ```
+Read in single year of temperature data. 
 
 ### Dataset 1: Portal
 
@@ -450,7 +420,7 @@ print(portal)
 ```
 
 ```{r}
-ggplot(df_test, aes(lon, lat)) +
+ggplot(single_year_temp, aes(lon, lat)) +
   geom_tile(aes(fill = temp)) +
   geom_vline(xintercept = lon_conversion(-109)) +
   geom_hline(yintercept = lat_conversion(32))
