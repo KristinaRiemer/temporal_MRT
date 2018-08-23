@@ -298,7 +298,6 @@ with masses, do all occurrences have mass values?
 
 * Get latitude and longitude for each dataset's site
 * Document source for each of these
-* Convert normal lat/lon to temp grid lat/lon? 
 
 ```{r}
 site_locations = data.frame()
@@ -379,6 +378,12 @@ site_locations = site_locations %>%
 site_locations
 ```
 Add converted Fray Jorge coordinates to locations dataframe. 
+```{r}
+site_locations$lon = as.numeric(site_locations$lon)
+site_locations$lat = as.numeric(site_locations$lat)
+```
+
+Change coordinates columns to numeric type. 
 
 ### Site temperatures
 
@@ -391,8 +396,10 @@ Add converted Fray Jorge coordinates to locations dataframe.
 #### Notes
 
 * Conversions: 
-    * grid_lon = coord_lon * 2
-    * grid_lat = -((coord_lat - 90) * 2)
+    * Grid longitude is: 
+        * coordinate longitude if it is positive
+        * coordinate longitude + 720 if it is negative
+    * Grid latitude is 180 - coordinate latitude
 
 ```{r}
 lon_conversion = function(coord_lon){
@@ -413,15 +420,19 @@ lat_conversion = function(coord_lat){
   return(grid_lat)
 }
 ```
+```{r}
+lon_conversion(site_locations$lon[1])
+```
 
 ```{r}
-portal = c(lon_conversion(151), lat_conversion(-33))
-print(portal)
+site_locations = site_locations %>% 
+  rowwise() %>% 
+  mutate(grid_lon = lon_conversion(lon), 
+         grid_lat = lat_conversion(lat))
 ```
 
 ```{r}
 ggplot(single_year_temp, aes(lon, lat)) +
   geom_tile(aes(fill = temp)) +
-  geom_vline(xintercept = lon_conversion(-109)) +
-  geom_hline(yintercept = lat_conversion(32))
+  geom_point(data = site_locations, aes(x = grid_lon, y = grid_lat))
 ```
