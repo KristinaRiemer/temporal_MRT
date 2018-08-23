@@ -336,7 +336,7 @@ portal_mean_latlon = as.data.frame(spTransform(portal_mean_UTM, CRS("+proj=longl
 Generate variables for each coordinate direction, then convert from UTM to lat/lon. 
 ```{r}
 site_locations = site_locations %>% 
-  bind_rows(c(site_name = "Portal", 
+  bind_rows(c(site_name = "portal", 
               lon = portal_mean_latlon$coords.x1, 
               lat = portal_mean_latlon$coords.x2))
 site_locations
@@ -372,7 +372,7 @@ fray_jorge_lon = deg_min_sec_to_dec(71, 40, 0, "W")
 Use function to convert Fray Jorge coordinates. 
 ```{r}
 site_locations = site_locations %>% 
-  bind_rows(c(site_name = "Fray Jorge", 
+  bind_rows(c(site_name = "fray_jorge", 
               lon = fray_jorge_lon, 
               lat = fray_jorge_lat))
 site_locations
@@ -426,6 +426,7 @@ site_locations = site_locations %>%
   rowwise() %>% 
   mutate(grid_lon = lon_conversion(lon), 
          grid_lat = lat_conversion(lat))
+site_locations
 ```
 Convert all site coordinates to grid coordinates. 
 ```{r}
@@ -448,18 +449,41 @@ monthly_temps
 ```
 Set up dataframe with month and year for each index value. 
 ```{r}
-extract_single_temp = function(month_index){
-  single_temp = temp_variable_all[site_locations$grid_lon[1], site_locations$grid_lat[1], month_index]
-  return(single_temp)
-}
+#extract_single_temp = function(lon, lat, month_index){
+#  single_temp = temp_variable_all[lon, lat, month_index]
+#  return(single_temp)
+#}
 ```
 Write function to get Portal temps based on desired month. 
 ```{r}
-monthly_portal_temps = mapply(extract_single_temp, month_index = monthly_temps$index)
-monthly_temps$portal = monthly_portal_temps
-monthly_temps
+#monthly_portal_temps = mapply(extract_single_temp, lon = site_locations$lon[1], lat = site_locations$lat[1], month_index = monthly_temps$index)
+#monthly_temps$portal = monthly_portal_temps
+#monthly_temps
 ```
 Extract all monthly temperatures for Portal and put into dataframe. 
+
+```{r}
+test_df = c(site = character(), month = numeric(), each_temp = numeric())
+for(site in site_locations$site_name){
+  lon = site_locations$grid_lon[site_locations$site_name == site]
+  lat = site_locations$grid_lat[site_locations$site_name == site]
+  for(month in monthly_temps$index){
+    each_temp = temp_variable_all[lon, lat, month]
+    #print(c(site, lon, lat, month, each_temp))
+    row = c(site, month, each_temp)
+    test_df = rbind(test_df, row)
+  }
+}
+head(test_df)
+tail(test_df)
+```
+
+```{r}
+test_df2 = data.frame(test_df)
+tail(test_df2, n = 50)
+```
+
+
 ```{r}
 annual_temps = monthly_temps %>%
   group_by(year) %>% 
