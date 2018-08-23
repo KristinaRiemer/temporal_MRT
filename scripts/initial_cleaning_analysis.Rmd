@@ -389,7 +389,8 @@ Change coordinates columns to numeric type.
 
 #### TODO
 
-* Look up all July (?) temperatures for each site
+* Look up all monthly temperatures for each site
+* Get average annual temperature for each site
 * Test Portal temps against the on-site temperature measurements
 
 #### Notes
@@ -434,11 +435,6 @@ ggplot(single_year_temp, aes(lon, lat)) +
   scale_y_reverse()
 ```
 Plot grid coordinates on one year of temperature to check accuracy. 
-
-```{r}
-temp_variable_all[site_locations$grid_lon[1], site_locations$grid_lat[1], 1375]
-```
-Extract July 2014 temperature for Portal. 
 ```{r}
 months = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 years = c()
@@ -446,24 +442,30 @@ for(year in 1900:2014){
   year_repeats = rep(year, 12)
   years = c(years, year_repeats)
 }
-month_indices = data.frame(index = seq(1, 1380), month = rep(months, 115), year = years)
-month_indices
+monthly_temps = data.frame(index = seq(1, 1380), month = rep(months, 115), year = years)
+monthly_temps$month = factor(monthly_temps$month, levels = month.abb)
+monthly_temps
 ```
-
-Generate list of July temperature index values. 
+Set up dataframe with month and year for each index value. 
 ```{r}
-july_indices = month_indices %>% 
-  filter(month == "Jul") %>% 
-  select(index)
-july_indices
-```
-
-```{r}
-extract_single_temp = function(year_index){
-  single_temp = temp_variable_all[site_locations$grid_lon[1], site_locations$grid_lat[1], year_index]
+extract_single_temp = function(month_index){
+  single_temp = temp_variable_all[site_locations$grid_lon[1], site_locations$grid_lat[1], month_index]
   return(single_temp)
 }
-july_temps2 = mapply(extract_single_temp, year_index = july_indices$index)
-july_temps2
 ```
-Extract all July temperatures for Portal and put into dataframe. 
+Write function to get Portal temps based on desired month. 
+```{r}
+monthly_portal_temps = mapply(extract_single_temp, month_index = monthly_temps$index)
+monthly_temps$portal = monthly_portal_temps
+monthly_temps
+```
+Extract all monthly temperatures for Portal and put into dataframe. 
+```{r}
+annual_temps = monthly_temps %>%
+  group_by(year) %>% 
+  summarize(portal = mean(portal))
+annual_temps
+```
+Get mean annual temperatures for Portal and put into dataframe. 
+
+Set up to do for all sites in locations list. 
