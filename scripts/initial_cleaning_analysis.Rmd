@@ -389,7 +389,6 @@ Change coordinates columns to numeric type.
 
 #### TODO
 
-* Convert lat lon coordinates to grid coordinates
 * Look up all July (?) temperatures for each site
 * Test Portal temps against the on-site temperature measurements
 
@@ -420,9 +419,6 @@ lat_conversion = function(coord_lat){
   return(grid_lat)
 }
 ```
-```{r}
-lon_conversion(site_locations$lon[1])
-```
 
 ```{r}
 site_locations = site_locations %>% 
@@ -430,9 +426,44 @@ site_locations = site_locations %>%
   mutate(grid_lon = lon_conversion(lon), 
          grid_lat = lat_conversion(lat))
 ```
-
+Convert all site coordinates to grid coordinates. 
 ```{r}
 ggplot(single_year_temp, aes(lon, lat)) +
   geom_tile(aes(fill = temp)) +
-  geom_point(data = site_locations, aes(x = grid_lon, y = grid_lat))
+  geom_point(data = site_locations, aes(x = grid_lon, y = grid_lat)) +
+  scale_y_reverse()
 ```
+Plot grid coordinates on one year of temperature to check accuracy. 
+
+```{r}
+temp_variable_all[site_locations$grid_lon[1], site_locations$grid_lat[1], 1375]
+```
+Extract July 2014 temperature for Portal. 
+```{r}
+months = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+years = c()
+for(year in 1900:2014){
+  year_repeats = rep(year, 12)
+  years = c(years, year_repeats)
+}
+month_indices = data.frame(index = seq(1, 1380), month = rep(months, 115), year = years)
+month_indices
+```
+
+Generate list of July temperature index values. 
+```{r}
+july_indices = month_indices %>% 
+  filter(month == "Jul") %>% 
+  select(index)
+july_indices
+```
+
+```{r}
+extract_single_temp = function(year_index){
+  single_temp = temp_variable_all[site_locations$grid_lon[1], site_locations$grid_lat[1], year_index]
+  return(single_temp)
+}
+july_temps2 = mapply(extract_single_temp, year_index = july_indices$index)
+july_temps2
+```
+Extract all July temperatures for Portal and put into dataframe. 
