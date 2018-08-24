@@ -354,6 +354,7 @@ Notes
 #### TODO
 
 * Find second source for Fray Jorge coordinates
+* Figure out why coordinates are in ocean on temp grid
 
 ```{r}
 deg_min_sec_to_dec = function(degree, minute, second, direction = NULL){
@@ -382,16 +383,14 @@ Add converted Fray Jorge coordinates to locations dataframe.
 site_locations$lon = as.numeric(site_locations$lon)
 site_locations$lat = as.numeric(site_locations$lat)
 ```
-
 Change coordinates columns to numeric type. 
 
 ### Site temperatures
 
 #### TODO
 
-* Look up all monthly temperatures for each site
-* Get average annual temperature for each site
 * Test Portal temps against the on-site temperature measurements
+* Delete manual change in Fray Jorge longitude
 
 #### Notes
 
@@ -412,7 +411,6 @@ lon_conversion = function(coord_lon){
   return(grid_lon)
 }
 ```
-
 ```{r}
 lat_conversion = function(coord_lat){
   coord_lat_double = coord_lat * 2
@@ -420,12 +418,16 @@ lat_conversion = function(coord_lat){
   return(grid_lat)
 }
 ```
-
+Write functions to convert coordinates to grid version of coordinates. 
 ```{r}
 site_locations = site_locations %>% 
   rowwise() %>% 
   mutate(grid_lon = lon_conversion(lon), 
          grid_lat = lat_conversion(lat))
+site_locations
+```
+```{r}
+site_locations$grid_lon[2] = site_locations$grid_lon[2] + 2
 site_locations
 ```
 Convert all site coordinates to grid coordinates. 
@@ -443,53 +445,43 @@ for(year in 1900:2014){
   year_repeats = rep(year, 12)
   years = c(years, year_repeats)
 }
-monthly_temps = data.frame(index = seq(1, 1380), month = rep(months, 115), year = years)
-monthly_temps$month = factor(monthly_temps$month, levels = month.abb)
-monthly_temps
+indices = data.frame(index = seq(1, 1380), month = rep(months, 115), year = years)
+indices$month = factor(indices$month, levels = month.abb)
+indices
 ```
 Set up dataframe with month and year for each index value. 
 ```{r}
-#extract_single_temp = function(lon, lat, month_index){
-#  single_temp = temp_variable_all[lon, lat, month_index]
-#  return(single_temp)
-#}
-```
-Write function to get Portal temps based on desired month. 
-```{r}
-#monthly_portal_temps = mapply(extract_single_temp, lon = site_locations$lon[1], lat = site_locations$lat[1], month_index = monthly_temps$index)
-#monthly_temps$portal = monthly_portal_temps
-#monthly_temps
-```
-Extract all monthly temperatures for Portal and put into dataframe. 
-
-```{r}
-test_df = c(site = character(), month = numeric(), each_temp = numeric())
+monthly_temps = data.frame(site = character(), month = numeric(), temp = numeric())
 for(site in site_locations$site_name){
   lon = site_locations$grid_lon[site_locations$site_name == site]
   lat = site_locations$grid_lat[site_locations$site_name == site]
-  for(month in monthly_temps$index){
-    each_temp = temp_variable_all[lon, lat, month]
-    #print(c(site, lon, lat, month, each_temp))
-    row = c(site, month, each_temp)
-    test_df = rbind(test_df, row)
+  for(index in indices$index){
+    temp = temp_variable_all[lon, lat, index]
+    each_temp = data.frame(site = site, index = index, temp = temp)
+    monthly_temps = rbind(monthly_temps, each_temp)
   }
 }
-head(test_df)
-tail(test_df)
+monthly_temps
 ```
-
+Extract all monthly temperatures for each site. 
 ```{r}
-test_df2 = data.frame(test_df)
-tail(test_df2, n = 50)
+monthly_temps = monthly_temps %>% 
+  left_join(indices, by = "index")
+monthly_temps
 ```
-
-
+Add date information to monthly temperatures. 
 ```{r}
 annual_temps = monthly_temps %>%
-  group_by(year) %>% 
-  summarize(portal = mean(portal))
+  group_by(site, year) %>% 
+  summarise(avg_temp = mean(temp), 
+            avg_temp_sd = sd(temp))
 annual_temps
 ```
-Get mean annual temperatures for Portal and put into dataframe. 
-
-Set up to do for all sites in locations list. 
+Get mean annual temperatures for all sites and put into dataframe. 
+```{r}
+ggplot(annual_temps, aes(x = year, y = avg_temp)) +
+  geom_point() +
+  geom_errorbar(aes(x = year, ymin = avg_temp - avg_temp_sd, ymax = avg_temp + avg_temp_sd)) +
+  facet_wrap(~site)
+```
+Plot mean annual temperature and standard deviation for each site. 
