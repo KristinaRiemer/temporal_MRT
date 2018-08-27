@@ -15,6 +15,8 @@ library(tidyr)
 library(testthat)
 library(ncdf4)
 library(rgdal)
+library(purrr)
+library(broom)
 ```
 
 ### Temperature data
@@ -491,7 +493,10 @@ Plot mean annual temperature and standard deviation for each site.
 #### TODO
 
 * For each species at each site, plot mean yearly mass against mean annual temp (?)
+* Get p-value and r-squared for each species
+* Calculate r from r-squared
 * Portal first
+* Generalize to all sites
 * Filter out species with too few years of mass data (set arbitrarily at 5 currently)
 
 ```{r}
@@ -524,3 +529,12 @@ ggplot(portal_annual_masses, aes(x = avg_temp, y = mass_mean)) +
 ```
 Plot linear regression between annual temp and mean mass for each species. Each
 point corresponds to a year of data. 
+```{r}
+portal_lm_results = portal_annual_masses %>% 
+  nest(-species) %>% 
+  mutate(fit = map(data, ~ lm(mass_mean ~ avg_temp, data = .)), 
+         results = map(fit, glance)) %>% 
+  unnest(results)
+portal_lm_results
+```
+Produce dataframe of linear regression results for all Portal species. 
