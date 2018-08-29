@@ -495,6 +495,7 @@ Plot mean annual temperature and standard deviation for each site.
 * For each species at each site, plot mean yearly mass against mean annual temp (?)
 * Get p-value and r-squared for each species
 * Calculate r from r-squared
+* Plot histogram of r values for each site
 * Portal first
 * Generalize to all sites
 * Filter out species with too few years of mass data (set arbitrarily at 5 currently)
@@ -530,11 +531,46 @@ ggplot(portal_annual_masses, aes(x = avg_temp, y = mass_mean)) +
 Plot linear regression between annual temp and mean mass for each species. Each
 point corresponds to a year of data. 
 ```{r}
-portal_lm_results = portal_annual_masses %>% 
+portal_lm_tidy = portal_annual_masses %>% 
+  nest(-species) %>% 
+  mutate(fit = map(data, ~ lm(mass_mean ~ avg_temp, data = .)), 
+         results = map(fit, tidy)) %>% 
+  unnest(results) %>% 
+  filter(term == "avg_temp") %>% 
+  select(species, slope = estimate, p.value)
+portal_lm_tidy
+```
+Produce dataframe of linear regression results for Portal species with p-value 
+and slope. 
+```{r}
+portal_lm_glance = portal_annual_masses %>% 
   nest(-species) %>% 
   mutate(fit = map(data, ~ lm(mass_mean ~ avg_temp, data = .)), 
          results = map(fit, glance)) %>% 
-  unnest(results)
-portal_lm_results
+  unnest(results) %>% 
+  select(species, r.squared)
+portal_lm_glance
 ```
-Produce dataframe of linear regression results for all Portal species. 
+Produce dataframe of linear regression results for Portal species with r2. 
+```{r}
+portal_lm = portal_lm_glance %>% 
+  full_join(portal_lm_tidy, by = "species")
+portal_lm
+```
+Combine two dataframes. 
+```{r}
+portal_lm = portal_lm %>% 
+  mutate(r = case_when(slope > 0 ~ sqrt(r.squared), 
+                       slope < 0 ~ -sqrt(r.squared)))
+portal_lm
+```
+Combine r-squared and slope to get r value. 
+```{r}
+ggplot(portal_lm, aes(x = r)) +
+  geom_histogram() +
+  xlim(c(-1, 1))
+ggplot(portal_lm, aes(x = r)) +
+  geom_density() +
+  xlim(c(-1, 1))
+```
+Plot r values. 
