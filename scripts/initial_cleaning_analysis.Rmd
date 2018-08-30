@@ -509,11 +509,10 @@ Plot mean annual temperature and standard deviation for each site.
 * Filter out species with too few years of mass data (set arbitrarily at 5 currently)
 * Refactor for loops into functions (2 for cleaning, 2 for plotting)
 * Nest temp dataset instead of for loop? 
-* Combine mass-temp data (i.e., site_annual_masses) for all sites into single 
-dataframe, then separate plotting of that? 
 
 ```{r}
 sites = c("portal", "fray_jorge")
+all_annual_masses = data.frame(species = factor(), yr = numeric(), mass_mean = numeric(), avg_temp = numeric(), site = factor())
 for(each_site in sites){
   site_annual_temps = annual_temps %>% 
     filter(site == each_site) %>% 
@@ -528,15 +527,24 @@ for(each_site in sites){
     select(species, yr, mass_mean)
   site_annual_masses = site_annual_masses %>%
     left_join(site_annual_temps, by = c("yr" = "year"))
-  print(ggplot(site_annual_masses, aes(x = avg_temp, y = mass_mean)) +
-    geom_point() +
-      stat_smooth(method = "lm") +
-    facet_wrap(~species, scales = "free"))
+  site_annual_masses$site = as.factor(each_site)
+  all_annual_masses = rbind(all_annual_masses, site_annual_masses)
+}
+all_annual_masses
+```
+Get each species average mass and temperature per year for all sites. 
+```{r}
+for(each_site in unique(all_annual_masses$site)){
+  print(ggplot(all_annual_masses[all_annual_masses$site == each_site,], aes(x = avg_temp, y = mass_mean)) +
+          geom_point() +
+          stat_smooth(method = "lm") +
+          facet_wrap(~species, scales = "free"))
 }
 ```
-Generalize getting and plotting temp vs mass for all sites. 
+Plot each species average mass and temperature per year for all sites. 
 ```{r}
 for(site in sites){
+  #input = all_annual_masses
   #get tidy and glance of lm for all species
   #combine these dataframes
   #calculate r value
