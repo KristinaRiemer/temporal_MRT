@@ -543,56 +543,43 @@ for(each_site in unique(all_annual_masses$site)){
 ```
 Plot each species average mass and temperature per year for all sites. 
 ```{r}
-for(site in sites){
-  #input = all_annual_masses
-  #get tidy and glance of lm for all species
-  #combine these dataframes
-  #calculate r value
-  #plot r distributions, one per site
+all_lm = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor())
+for(each_site in sites){
+  site_annual_masses = all_annual_masses[all_annual_masses$site == each_site,]
+  site_lm_tidy = site_annual_masses %>%
+    nest(-species) %>% 
+    mutate(fit = map(data, ~lm(mass_mean ~ avg_temp, data = .)), 
+           results = map(fit, tidy)) %>% 
+    unnest(results) %>% 
+    filter(term == "avg_temp") %>% 
+    select(species, slope = estimate, p.value)
+  site_lm_glance = site_annual_masses %>% 
+    nest(-species) %>% 
+    mutate(fit = map(data, ~lm(mass_mean ~ avg_temp, data = .)), 
+           results = map(fit, glance)) %>% 
+    unnest(results) %>% 
+    select(species, r.squared)
+  site_lm = site_lm_glance %>% 
+    full_join(site_lm_tidy, by = "species")
+  site_lm = site_lm %>% 
+    mutate(r = case_when(slope > 0 ~ sqrt(r.squared), 
+                         slope < 0 ~ -sqrt(r.squared)))
+  site_lm$site = as.factor(each_site)
+  all_lm = rbind(all_lm, site_lm)
+}
+all_lm
+```
+Get each species p value and r for all sites. 
+```{r}
+for(each_site in unique(all_lm$site)){
+  print(ggplot(all_lm[all_lm$site == each_site,], aes(x = r)) +
+    geom_histogram() +
+    xlim(c(-1, 1)) +
+    ggtitle(each_site))
+  print(ggplot(all_lm[all_lm$site == each_site,], aes(x = r)) +
+    geom_density() +
+    xlim(c(-1, 1)) +
+    ggtitle(each_site))
 }
 ```
-Generalizing getting and plotting r distributions for all sites. 
-```{r}
-portal_lm_tidy = portal_annual_masses %>% 
-  nest(-species) %>% 
-  mutate(fit = map(data, ~ lm(mass_mean ~ avg_temp, data = .)), 
-         results = map(fit, tidy)) %>% 
-  unnest(results) %>% 
-  filter(term == "avg_temp") %>% 
-  select(species, slope = estimate, p.value)
-portal_lm_tidy
-```
-Produce dataframe of linear regression results for Portal species with p-value 
-and slope. 
-```{r}
-portal_lm_glance = portal_annual_masses %>% 
-  nest(-species) %>% 
-  mutate(fit = map(data, ~ lm(mass_mean ~ avg_temp, data = .)), 
-         results = map(fit, glance)) %>% 
-  unnest(results) %>% 
-  select(species, r.squared)
-portal_lm_glance
-```
-Produce dataframe of linear regression results for Portal species with r2. 
-```{r}
-portal_lm = portal_lm_glance %>% 
-  full_join(portal_lm_tidy, by = "species")
-portal_lm
-```
-Combine two dataframes. 
-```{r}
-portal_lm = portal_lm %>% 
-  mutate(r = case_when(slope > 0 ~ sqrt(r.squared), 
-                       slope < 0 ~ -sqrt(r.squared)))
-portal_lm
-```
-Combine r-squared and slope to get r value. 
-```{r}
-ggplot(portal_lm, aes(x = r)) +
-  geom_histogram() +
-  xlim(c(-1, 1))
-ggplot(portal_lm, aes(x = r)) +
-  geom_density() +
-  xlim(c(-1, 1))
-```
-Plot r values. 
+Plot all species r distributions for each site. 
