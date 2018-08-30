@@ -499,7 +499,30 @@ Plot mean annual temperature and standard deviation for each site.
 * Portal first
 * Generalize to all sites
 * Filter out species with too few years of mass data (set arbitrarily at 5 currently)
+* Refactor for loops into functions (2 for cleaning, 2 for plotting)
 
+```{r}
+sites = c("portal", "fray_jorge")
+for(site in sites){
+  #get temp dataset
+  #get masses dataset
+    #input for Portal = by_sp_yr; equivalent for fray jorge? 
+    #rename
+  #combine temp and species masses
+  #put all site dataframes together with new site column
+  #plot all species temp vs mass for each site
+}
+```
+Generalize getting and plotting temp vs mass for all sites. 
+```{r}
+for(site in sites){
+  #get tidy and glance of lm for all species
+  #combine these dataframes
+  #calculate r value
+  #plot r distributions, one per site
+}
+```
+Generalizing getting and plotting r distributions for all sites. 
 ```{r}
 portal_annual_temps = annual_temps %>% 
   filter(site == "portal") %>% 
