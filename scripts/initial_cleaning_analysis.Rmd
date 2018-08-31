@@ -138,6 +138,9 @@ Read in single year of temperature data.
 #### TODO
 
 * Choose what columns and column names each dataset should have once it's cleaned
+* Pull out out plotting into separate section because it can be generalized to 
+work on all datasets
+* Filter community size distributions by number of years of data or something
 
 ### Dataset 1: Portal
 
@@ -199,6 +202,17 @@ ggplot(data = by_sp_yr_portal, aes(x = yr, y = mass_mean)) +
   facet_wrap(~species, scale = "free_y")
 ```
 Plot mass mean and sd by species across years.
+```{r}
+ggplot(by_sp_yr_portal, aes(x = mass_mean)) +
+  geom_histogram() +
+  scale_x_log10() +
+  facet_wrap(~yr)
+ggplot(by_sp_yr_portal, aes(x = mass_mean)) +
+  geom_density() +
+  scale_x_log10() +
+  facet_wrap(~yr)
+```
+Plot distributions of all species average masses by year. 
 
 ### Dataset 2: Fray Jorge
 
@@ -266,6 +280,17 @@ ggplot(fray_occurrences, aes(x = year)) +
   facet_wrap(~sp, scales = "free_y")
 ```
 Plot number of individuals of each species across years. 
+```{r}
+ggplot(by_sp_yr_fray_jorge, aes(x = mass_mean)) +
+  geom_histogram() +
+  scale_x_log10() +
+  facet_wrap(~yr)
+ggplot(by_sp_yr_fray_jorge, aes(x = mass_mean)) +
+  geom_density() +
+  scale_x_log10() +
+  facet_wrap(~yr)
+```
+Plot distributions of all species average masses by year. 
 
 ### Dataset 3: Thibault et al., 2011
 
