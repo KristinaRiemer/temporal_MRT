@@ -1,2 +1,7 @@
 Package: packageSimple
 Version: 0.1
+Date: 2018-09-19
+Title: Coordinate conversion
+Description: Functions to convert latitude and longitude to grid format. 
+Author: Kristina Riemer <kristina.riemer@weecology.org>
+Maintainer: Kristina Riemer <kristina.riemer@weecology.org>
