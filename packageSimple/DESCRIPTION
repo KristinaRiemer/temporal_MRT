@@ -6,3 +6,4 @@ Description: Functions to convert latitude and longitude to grid format.
 Author: Kristina Riemer <kristina.riemer@weecology.org>
 Maintainer: Kristina Riemer <kristina.riemer@weecology.org>
 RoxygenNote: 6.1.0
+License: MIT + file LICENSE
