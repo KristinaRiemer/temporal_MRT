@@ -17,6 +17,7 @@ library(ncdf4)
 library(rgdal)
 library(purrr)
 library(broom)
+library(cowplot)
 ```
 
 ### Temperature data
@@ -196,13 +197,6 @@ removing rows with no weight or no species ID and retaining only rodents.
 The minimum mean mass is `r min(by_sp_yr_portal$mass_mean)` and max is `r max(by_sp_yr_portal$mass_mean)`. 
 There are `r length(unique(by_sp_yr_portal$species))` species across `r length(unique(by_sp_yr_portal$yr))` years. 
 ```{r}
-ggplot(data = by_sp_yr_portal, aes(x = yr, y = mass_mean)) +
-  geom_errorbar(aes(ymin = mass_mean - mass_sd, ymax = mass_mean + mass_sd)) +
-  geom_point() +
-  facet_wrap(~species, scale = "free_y")
-```
-Plot mass mean and sd by species across years.
-```{r}
 ggplot(by_sp_yr_portal, aes(x = mass_mean)) +
   geom_histogram() +
   scale_x_log10() +
@@ -267,13 +261,6 @@ removing rows with no weight or no species ID.
 
 The minimum mean mass is `r min(by_sp_yr_fray_jorge$mass_mean)` and max is `r max(by_sp_yr_fray_jorge$mass_mean)`. 
 There are `r length(unique(by_sp_yr_fray_jorge$sp))` species across `r length(unique(by_sp_yr_fray_jorge$year))` years. 
-```{r}
-ggplot(data = by_sp_yr_fray_jorge, aes(x = year, y = mass_mean)) +
-  geom_point() +
-  geom_errorbar(aes(ymin = mass_mean - mass_sd, ymax = mass_mean + mass_sd)) +
-  facet_wrap(~sp, scales = "free_y")
-```
-Plot mass mean and sd by species across years.
 ```{r}
 ggplot(fray_occurrences, aes(x = year)) +
   geom_bar() +
@@ -525,15 +512,10 @@ Plot mean annual temperature and standard deviation for each site.
 
 #### TODO
 
-* For each species at each site, plot mean yearly mass against mean annual temp (?)
-* Get p-value and r-squared for each species
-* Calculate r from r-squared
-* Plot histogram of r values for each site
-* Portal first
-* Generalize to all sites
 * Filter out species with too few years of mass data (set arbitrarily at 5 currently)
 * Refactor for loops into functions (2 for cleaning, 2 for plotting)
 * Nest temp dataset instead of for loop? 
+* Fix three panel `cowplot` map
 
 ```{r}
 sites = c("portal", "fray_jorge")
@@ -559,14 +541,39 @@ all_annual_masses
 ```
 Get each species average mass and temperature per year for all sites. 
 ```{r}
-for(each_site in unique(all_annual_masses$site)){
-  print(ggplot(all_annual_masses[all_annual_masses$site == each_site,], aes(x = avg_temp, y = mass_mean)) +
-          geom_point() +
-          stat_smooth(method = "lm") +
-          facet_wrap(~species, scales = "free"))
-}
+plots = all_annual_masses %>% 
+  group_by(site) %>% 
+  nest() %>% 
+  mutate(
+    temp_yearly = purrr::map(data, ~ ggplot(., aes(yr, avg_temp)) +
+                            geom_point() +
+                              stat_smooth(method = "lm")),
+    mass_yearly = purrr::map(data, ~ ggplot(., aes(yr, mass_mean)) + 
+                            geom_point() +
+                            stat_smooth(method = "lm") +
+                            facet_wrap(~species, scales = "free", ncol = 1)),
+    mrt = purrr::map(data, ~ ggplot(., aes(avg_temp, mass_mean)) + 
+                            geom_point() +
+                            stat_smooth(method = "lm") +
+                            facet_wrap(~species, scales = "free", ncol = 1))
+  )
+plots
 ```
-Plot each species average mass and temperature per year for all sites. 
+
+```{r fig.width = 2, fig.height = 10}
+plots$combined_plots = purrr::pmap(plots, ~cowplot::plot_grid(..4, ..5, align = "h"))
+plots$combined_plots
+plots$more_combined_plots = purrr::pmap(plots, ~cowplot::plot_grid(..3, ..6, nrow = 2, align = "v"))
+plots$more_combined_plots
+```
+```{r}
+plots$combined = plots %>% 
+  purrr::pmap(., ~cowplot::plot_grid(..4, ..5, align = "h")) %>% 
+  purrr::pmap(., ~cowplot::plot_grid(..3, ..6, nrow = 2, align = "v"))
+plots
+```
+
+
 ```{r}
 all_lm = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor())
 for(each_site in sites){
