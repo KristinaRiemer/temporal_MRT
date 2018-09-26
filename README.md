@@ -4,14 +4,23 @@ Using at least a dozen time series datasets of individual-level small mammal bod
 
 ## Data
 
-* Raw mammal size datasets for each site in `data/raw_[site]`
 * Temperature raster in `data/temperature`
+* Raw mammal size datasets for each site in `data/[site]/raw`
+* Cleaned mammal size datasets (by `clean_[site].R`) in `data/[site]/raw`
 
 ## Scripts
-_all in_ `scripts`
 
-* Very simple first data and figures in `initial_cleaning_analysis.R`
-* Entire rough pipeline, including end figures, in `initial_cleaning_analysis.Rmd`; get html rendering of R Notebook by running all of the code chunks and selecting `Preview`
+* Scripts for cleaning, organizing, and combining datasets in `scripts/cleaning` listed in order they need to be run
+	* `clean_[site].R` is for cleaning each size dataset, one unique script per site
+	* `site_locations.Rmd` compiles the coordinates for each site, including documentation for sources
+	* `site_temps.R` converts site coordinates to temperature raster format, plots them on temperature data from a single month, and extracts all annual temperatures for all sites
+	* `species_temps.R` combines mass and temperature datasets for each site together
+* Scripts for statistical analysis and visualization in `scripts/analysis`, should be able to run them in any order because they are standalone
+	* `main_fig.R` plots the main combined figure for each site; this includes annual temperature, annual mean mass per species, and temperature-mass relationship
+	* `lin_reg.R` runs linear regression on each species temperature-mass relationship, extracts r and p-values, and plots these values
+	* `size_distributions.R` plots size distribution of community across time, both at the species and individual levels
+* Entire rough pipeline, including end figures, in `scripts/initial_cleaning_analysis.Rmd`; get html rendering of R Notebook by running all of the code chunks and selecting `Preview`
+* Very simple first data and figures in `scripts/initial_cleaning_analysis.R`
 
 ## Other files
 
