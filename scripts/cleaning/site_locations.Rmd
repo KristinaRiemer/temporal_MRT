@@ -5,3 +5,93 @@ output:
   pdf_document: default
 ---
 
+#### TODO
+
+* Get latitude and longitude for each dataset's site
+* Document source for each of these
+
+```{r}
+site_locations = data.frame()
+```
+Create empty dataframe that will store location values. 
+
+#### Portal
+
+Notes
+
+* From [Ernest et al., 2016](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/15-2115.1)
+* Couldn't find location information in retriever versions of Portal data
+* Expect Portal to be about -109.063, 31.9107
+* In UTM zone 12
+
+#### TODO 
+
+* Add test for UTM to lat/lon conversion?
+
+```{r}
+if(!file.exists("../data/raw_portal/Portal_UTMCoords.csv")){
+  download.file("https://esajournals.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1890%2F15-2115.1&file=ecy1360-sup-0001-DataS1.zip", 
+               "../data/raw_portal/ecy1360-sup-0001-datas1.zip")
+  unzip("../data/raw_portal/ecy1360-sup-0001-datas1.zip", exdir = "../data/raw_portal/")
+}
+```
+Download data containing Portal coordinates. 
+```{r}
+portal_coords = read.csv("../data/raw_portal/Portal_UTMCoords.csv")
+```
+Read in particular dataset with coordinates. 
+```{r}
+portal_mean_UTM = SpatialPoints(cbind(mean(portal_coords$east), mean(portal_coords$north)), proj4string = CRS("+proj=utm +zone=12 +datum=WGS84"))
+portal_mean_latlon = as.data.frame(spTransform(portal_mean_UTM, CRS("+proj=longlat +datum=WGS84")))
+```
+Generate variables for each coordinate direction, then convert from UTM to lat/lon. 
+```{r}
+site_locations = site_locations %>% 
+  bind_rows(c(site_name = "portal", 
+              lon = portal_mean_latlon$coords.x1, 
+              lat = portal_mean_latlon$coords.x2))
+site_locations
+```
+Add Portal lat/lon to locations dataframe. 
+
+#### Fray Jorge
+
+Notes
+
+* From "Materials and Methods" section in Aguilera et al. (2015)
+![](../fray_jorge_location.png)
+* Expect latitude to be -30ish and longitude to be -71ish
+
+#### TODO
+
+* Find second source for Fray Jorge coordinates
+* Figure out why coordinates are in ocean on temp grid
+
+```{r}
+deg_min_sec_to_dec = function(degree, minute, second, direction = NULL){
+  decimal_degree = degree + (minute * (1/60)) + (second * (1/60) * (1/60))
+  if(direction == "S" | direction == "W"){
+    decimal_degree = -decimal_degree
+  }
+  return(decimal_degree)
+}
+```
+Function to convert degree minute second coordinates to decimal degrees. 
+```{r}
+fray_jorge_lat = deg_min_sec_to_dec(30, 38, 0, "S")
+fray_jorge_lon = deg_min_sec_to_dec(71, 40, 0, "W")
+```
+Use function to convert Fray Jorge coordinates. 
+```{r}
+site_locations = site_locations %>% 
+  bind_rows(c(site_name = "fray_jorge", 
+              lon = fray_jorge_lon, 
+              lat = fray_jorge_lat))
+site_locations
+```
+Add converted Fray Jorge coordinates to locations dataframe. 
+```{r}
+site_locations$lon = as.numeric(site_locations$lon)
+site_locations$lat = as.numeric(site_locations$lat)
+```
+Change coordinates columns to numeric type. 

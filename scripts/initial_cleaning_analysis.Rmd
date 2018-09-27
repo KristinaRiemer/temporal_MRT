@@ -138,9 +138,6 @@ Read in single year of temperature data.
 
 #### TODO
 
-* Choose what columns and column names each dataset should have once it's cleaned
-* Pull out out plotting into separate section because it can be generalized to 
-work on all datasets
 * Filter community size distributions by number of years of data or something
 
 ### Dataset 1: Portal
