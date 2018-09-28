@@ -20,7 +20,7 @@ site_locations = data.frame()
 ```
 Create empty dataframe that will store location values. 
 
-#### Portal
+### Site 1: Portal
 
 Notes
 
@@ -61,7 +61,7 @@ site_locations
 ```
 Add Portal lat/lon to locations dataframe. 
 
-#### Fray Jorge
+### Site 2: Fray Jorge
 
 Notes
 
@@ -102,3 +102,10 @@ site_locations$lon = as.numeric(site_locations$lon)
 site_locations$lat = as.numeric(site_locations$lat)
 ```
 Change coordinates columns to numeric type. 
+
+### Save coordinates dataframe
+
+```{r}
+write.csv(site_locations, "../../data/site_locations.csv", row.names = FALSE)
+```
+Save locations dataframe as csv. 
