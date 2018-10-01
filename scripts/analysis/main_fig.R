@@ -31,6 +31,5 @@ plots_df = occurrences_with_temp %>%
 # TODO: automatically determine height of plot from number of species
 # Save final figure for each site
 sites = unique(occurrences_with_temp$site)
-site_file_names = paste0("plots/", sites, "/", sites, ".png")
-site_file_names
+site_file_names = paste0("plots/", sites, "/", sites, "_main.png")
 map2(site_file_names, plots_df$combined, ggsave)
