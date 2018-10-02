@@ -6,10 +6,10 @@ library(dplyr)
 # Read in temperature and occurrence data
 site_annual_temps = read.csv("data/site_annual_temps.csv")
 occurrences_portal = read.csv("data/portal/clean/occurrences.csv")
-occurrences_fray_jorge = read.csv("data/frayjorge/clean/occurrences.csv")
+occurrences_frayjorge = read.csv("data/frayjorge/clean/occurrences.csv")
 
 # Get annual temperature for each species
-sites = c("portal", "fray_jorge")
+sites = c("portal", "frayjorge")
 occurrences_with_temp = data.frame(species = factor(), yr = numeric(), mass_mean = numeric(), avg_temp = numeric(), site = factor())
 for(each_site in sites){
   annual_temps_by_site = site_annual_temps %>% 

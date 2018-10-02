@@ -91,7 +91,7 @@ fray_jorge_lon = deg_min_sec_to_dec(71, 40, 0, "W")
 Use function to convert Fray Jorge coordinates. 
 ```{r}
 site_locations = site_locations %>% 
-  bind_rows(c(site_name = "fray_jorge", 
+  bind_rows(c(site_name = "frayjorge", 
               lon = fray_jorge_lon, 
               lat = fray_jorge_lat))
 site_locations
