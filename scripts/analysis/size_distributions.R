@@ -1,6 +1,9 @@
-library(dplyr)
 library(ggplot2)
 library(cowplot)
+
+# Read in occurrences data
+occurrences_path = "data/occurrences.csv"
+occurrences = read.csv(occurrences_path)
 
 # Functions
 plot_size_distributions = function(site){
@@ -14,20 +17,11 @@ plot_size_distributions = function(site){
     facet_wrap(~yr)
   size_both = plot_grid(size_hist, size_density)
   site_file_name = paste0("plots/", site, "/", site, "_size.png")
+  print(size_both)
   ggsave(site_file_name, plot = size_both)
 }
 
-# Read in occurrences data
-sites = c("portal", "frayjorge")
-occurrences = data.frame()
-for(site in sites){
-  site_occurrences_path = paste0("data/", site, "/clean/occurrences.csv")
-  site_occurrences_df = read.csv(site_occurrences_path)
-  site_occurrences_df$site = c(site)
-  occurrences = bind_rows(occurrences, site_occurrences_df)
-}
-
 # Plot size distributions as histograms and density plots
-for(site in sites){
+for(site in unique(occurrences$site)){
   plot_size_distributions(site)
 }
