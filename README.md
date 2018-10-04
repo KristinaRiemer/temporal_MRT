@@ -12,6 +12,7 @@ Using at least a dozen time series datasets of individual-level small mammal bod
 
 * Scripts for cleaning, organizing, and combining datasets in `scripts/cleaning` listed in order they need to be run
 	* `clean_[site].R` is for cleaning each size dataset, one unique script per site
+	* `combine_occurrences.R` is for combining clean size datasets for all sites
 	* `site_locations.Rmd` compiles the coordinates for each site, including documentation for sources
 	* `site_temps.R` converts site coordinates to temperature raster format, plots them on temperature data from a single month, and extracts all annual temperatures for all sites
 	* `species_temps.R` combines mass and temperature datasets for each site together
@@ -24,5 +25,7 @@ Using at least a dozen time series datasets of individual-level small mammal bod
 
 ## Other files
 
+* Actual Shiny app to dynamically display project outputs in `shiny`, which currently displays only the size distributions plots by site
 * Initial example of a Shiny app in `shiny_simple`, which just displays each species mean mass across year for each site. 
+* Functions go in the `R` folder for the not-yet-completely-formed package `temporal_MRT` 
 * Initial example of turning code into an R script in `packageSimple`, which only contains the two functions for converting coordinates to the temperature grid format. 
