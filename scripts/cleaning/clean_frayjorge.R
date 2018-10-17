@@ -5,7 +5,7 @@ library(dplyr)
 # Download and read in occurrences data
 occurrences_path = "data/frayjorge/raw/fray_jorge_ecology_mammals.csv"
 if(!file.exists(occurrences_path)){
-  rdataretriever::install(dataset = "fray-jorge-ecology", connection = "csv", data_dir = "../data/raw_frayjorge/")
+  rdataretriever::install(dataset = "fray-jorge-ecology", connection = "csv", data_dir = "data/frayjorge/raw/")
 }
 occurrences = read.csv(occurrences_path, na.strings = ".")
 

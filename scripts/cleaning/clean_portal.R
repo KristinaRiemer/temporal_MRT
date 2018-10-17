@@ -4,7 +4,7 @@ library(dplyr)
 # Download and read in occurrences data
 occurrences_path = "data/portal/raw/portal_dev_rodent.csv"
 if(!file.exists(occurrences_path)){
-  rdataretriever::install(dataset = "portal-dev", connection = "csv", data_dir = "../data/raw_portal/")
+  rdataretriever::install(dataset = "portal-dev", connection = "csv", data_dir = "data/portal/raw/")
 }
 occurrences = read.csv(occurrences_path)
 
