@@ -2,6 +2,22 @@
 
 Using at least a dozen time series datasets of individual-level small mammal body size to determine how size is affected by temporal shifts in temperature. The null hypothesis is that there is no change in size that corresponds to temperature shifts, while the alternative hypothesis is that there is a negative relationship between size and temperature, in accordance with Bergmann's rule. 
 
+## Packages
+
+Install with `Rscript scripts/r_packages.R`
+
+Versions: 
+
+* rdataretriever_1.0.0
+* tidyr_0.8.0
+* dplyr_0.7.4
+* raster_2.7-15
+* ncdf4_1.16
+* ggplot2_3.0.0
+* broom_0.4.3
+* cowplot_0.9.1
+* purrr_0.2.4
+
 ## Data
 
 * Temperature raster in `data/temperature`
