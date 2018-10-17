@@ -54,7 +54,6 @@ if(!file.exists(single_month_path)){
                                                   single_month_temp$lat[i], 
                                                   1380]
   }
-  print(single_month_temp)
   write.csv(single_month_temp, single_month_path)
 }
 single_month_temp = read.csv(single_month_path)

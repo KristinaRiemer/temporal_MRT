@@ -14,7 +14,7 @@ Rscript scripts/cleaning/clean_portal.R
 Rscript scripts/cleaning/clean_frayjorge.R
 Rscript scripts/cleaning/combine_occurrences.R
 
-Rscript scripts/cleaning/site_locations.Rmd
+Rscript -e 'rmarkdown::render("scripts/cleaning/site_locations.Rmd")'
 Rscript scripts/cleaning/site_temps.R
 Rscript scripts/cleaning/species_temps.R
 
