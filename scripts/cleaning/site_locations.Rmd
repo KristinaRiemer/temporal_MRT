@@ -97,6 +97,28 @@ site_locations = site_locations %>%
 site_locations
 ```
 Add converted Fray Jorge coordinates to locations dataframe. 
+
+
+### Site 3: Sevilleta
+
+Notes
+
+* From [LTER data download site for Sev](https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-sev.8.297972)
+* In Temporal, Geographic and Taxonomic Coverage section
+* Have decimal degree longitudes and latitudes for all 8 sites
+
+```{r}
+sevilleta_coords_all = data.frame(longitudes = c(-106.736, -106.736, -106.927, -106.927, -107.03, -106.535, -106.523, -106.631), latitudes = c(34.3331, 34.3331, 34.296, 34.269, 34.418, 34.368, 34.4146, 34.3348))
+```
+Get all longitudes and latitudes. 
+```{r}
+site_locations = site_locations %>% 
+  bind_rows(c(site_name = "sevilleta", 
+              lon = mean(sevilleta_coords_all$longitudes), 
+              lat = mean(sevilleta_coords_all$latitudes)))
+site_locations
+```
+Add average Sevilleta coordinates to locations dataframe. 
 ```{r}
 site_locations$lon = as.numeric(site_locations$lon)
 site_locations$lat = as.numeric(site_locations$lat)
