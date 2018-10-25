@@ -13,7 +13,6 @@ for(each_site in unique(occurrences$site)){
     filter(site == each_site) %>% 
     data.frame() %>% 
     select(year, avg_temp)
-  #occurrences_by_site = eval(parse(text = paste("occurrences", each_site, sep = "_")))
   occurrences_by_site = occurrences %>% 
     filter(site == each_site)
   occurrences_by_site_n = occurrences_by_site %>%

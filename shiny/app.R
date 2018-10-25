@@ -11,7 +11,7 @@ ui = fluidPage(
     sidebarPanel(
       selectInput("site", 
                   label = "Choose a site", 
-                  choices = c("Portal", "Fray Jorge"), 
+                  choices = c("Portal", "Fray Jorge", "Sevilleta"), 
                   selected = "Portal")
     ), 
     mainPanel(plotOutput("map"))
@@ -23,7 +23,8 @@ server = function(input, output){
   output$map = renderPlot({
     data = switch(input$site, 
                   "Portal" = occurrences[occurrences$site == "portal",], 
-                  "Fray Jorge" = occurrences[occurrences$site == "frayjorge",])
+                  "Fray Jorge" = occurrences[occurrences$site == "frayjorge",], 
+                  "Sevilleta" = occurrences[occurrences$site == "sevilleta",])
     plot_size_distributions(site_data = data)
   })
   

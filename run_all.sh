@@ -9,6 +9,9 @@ mkdir data/portal/clean
 mkdir data/frayjorge
 mkdir data/frayjorge/raw
 mkdir data/frayjorge/clean
+mkdir data/sevilleta
+mkdir data/sevilleta/raw
+mkdir data/sevilleta/clean
 
 Rscript scripts/cleaning/clean_portal.R
 Rscript scripts/cleaning/clean_frayjorge.R
@@ -22,6 +25,7 @@ Rscript scripts/cleaning/species_temps.R
 mkdir plots
 mkdir plots/portal
 mkdir plots/frayjorge
+mkdir plots/sevilleta
 
 Rscript scripts/analysis/main_fig.R
 Rscript scripts/analysis/lin_reg.R

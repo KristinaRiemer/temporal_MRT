@@ -1,7 +1,7 @@
 library(dplyr)
 
 # Read in and combine occurrences data for all sites
-sites = c("portal", "frayjorge")
+sites = c("portal", "frayjorge", "sevilleta")
 occurrences = data.frame()
 for(site in sites){
   site_occurrences_path = paste0("data/", site, "/clean/occurrences.csv")
