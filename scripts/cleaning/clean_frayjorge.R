@@ -20,7 +20,8 @@ clean_occurrences = occurrences %>%
   filter(!is.na(wt), 
          !is.na(sp)) %>% 
   group_by(sp, year) %>% 
-  summarise(mass_mean = mean(wt), 
+  summarise(inds = n(), 
+            mass_mean = mean(wt), 
             mass_sd = sd(wt)) %>% 
   rename(species = sp, 
          yr = year)

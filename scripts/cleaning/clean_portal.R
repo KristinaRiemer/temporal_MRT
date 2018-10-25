@@ -21,7 +21,8 @@ clean_occurrences = occurrences %>%
          !is.na(species), 
          species %in% species_rodents$species_code) %>% 
   group_by(species, yr) %>% 
-  summarise(mass_mean = mean(wgt), 
+  summarise(inds = n(), 
+            mass_mean = mean(wgt), 
             mass_sd = sd(wgt))
 
 # Save cleaned occurrences data
