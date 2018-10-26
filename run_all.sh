@@ -15,6 +15,7 @@ mkdir data/sevilleta/clean
 
 Rscript scripts/cleaning/clean_portal.R
 Rscript scripts/cleaning/clean_frayjorge.R
+Rscript scripts/cleaning/clean_sevilleta.R
 Rscript scripts/cleaning/combine_occurrences.R
 
 Rscript -e 'rmarkdown::render("scripts/cleaning/site_locations.Rmd")'
