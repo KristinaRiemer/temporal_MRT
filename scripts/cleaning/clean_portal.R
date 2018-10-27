@@ -25,7 +25,7 @@ clean_occurrences = occurrences %>%
             mass_mean = mean(wgt), 
             mass_sd = sd(wgt))
 clean_occurrences = left_join(clean_occurrences, species_rodents, by = c("species" = "species_code")) %>% 
-  select(species, scientific_name, yr, inds, mass_mean, mass_sd)
+  select(species, yr, inds, mass_mean, mass_sd, scientific_name)
 
 # Save cleaned occurrences data
 clean_occurrences_path = "data/portal/clean/occurrences.csv"
