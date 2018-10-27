@@ -19,7 +19,8 @@ species_rodents = species %>%
 clean_occurrences = occurrences %>% 
   filter(!is.na(wgt), 
          !is.na(species), 
-         species %in% species_rodents$species_code) %>% 
+         species %in% species_rodents$species_code, 
+         reprod != "J") %>% 
   group_by(species, yr) %>% 
   summarise(inds = n(), 
             mass_mean = mean(wgt), 

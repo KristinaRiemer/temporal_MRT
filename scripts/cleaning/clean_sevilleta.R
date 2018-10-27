@@ -11,6 +11,7 @@ if(!file.exists(occurrences_path)){
 }
 occurrences = read.csv(occurrences_path, na.strings = c("na", "-999"))
 occurrences$mass = as.numeric(as.character(occurrences$mass))
+occurrences$species = trimws(occurrences$species)
 
 # Create species codes list
 codes_url = "https://digitalrepository.unm.edu/cgi/viewcontent.cgi?filename=0&article=1280&context=lter_sev_data&type=additional"
@@ -23,7 +24,8 @@ codes_df = data.frame(code = codes_list[seq(1, 161, by = 5)],
 # Remove occurrences and get annual species masses
 clean_occurrences = occurrences %>% 
   filter(!is.na(mass), 
-         !is.na(species)) %>% 
+         !is.na(species), 
+         age == "a") %>% 
   group_by(species, year) %>% 
   summarise(inds = n(), 
             mass_mean = mean(mass), 
