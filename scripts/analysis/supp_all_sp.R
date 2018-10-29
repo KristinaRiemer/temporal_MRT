@@ -13,14 +13,20 @@ plots_df = occurrences_with_temp %>%
   nest() %>% 
   mutate(
     mass_by_year = purrr::map(data, ~ ggplot(., aes(yr, mass_mean)) + 
-                               geom_point() +
-                               stat_smooth(method = "lm") +
-                               facet_wrap(~species, scales = "free")),
+                                geom_point() +
+                                stat_smooth(method = "lm") +
+                                facet_wrap(~species, scales = "free") +
+                                labs(x = "Year", y = "Mean Mass (g?)")),
     mass_by_temp = purrr::map(data, ~ ggplot(., aes(avg_temp, mass_mean)) +
                        geom_point() +
                        stat_smooth(method = "lm") +
-                       facet_wrap(~species, scales = "free"))
+                       facet_wrap(~species, scales = "free") + 
+                       labs(x = "Mean Temperature (C*)", y = "Mean Mass (g?)"))
     )
-plots_df$mass_by_year[1]
 
-# Save plots as [site]_supp.png
+# Save both all species plots for each site
+sites = unique(occurrences_with_temp$site)
+site_file_names_mass = paste0("plots/", sites, "/", sites, "_mass_supp.png")
+site_file_names_mrt = paste0("plots/", sites, "/", sites, "_mrt_supp.png")
+map2(site_file_names_mass, plots_df$mass_by_year, ggsave)
+map2(site_file_names_mrt, plots_df$mass_by_temp, ggsave)

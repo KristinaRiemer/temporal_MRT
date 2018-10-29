@@ -20,24 +20,23 @@ plots_df = occurrences_with_temp %>%
                                 labs(x = "Year", y = "Mean Temperature (C*)")), 
     mass_by_year = purrr::map(data, ~ ggplot(., aes(yr, mass_mean, color = species)) +
                                 geom_point() +
-                                geom_line() +
+                                stat_smooth(method = "lm", se = FALSE) +
                                 theme(legend.position = "none") +
                                 labs(x = "Year", y = "Mean Mass (g?)")),
     mass_by_temp = purrr::map(data, ~ ggplot(., aes(avg_temp, mass_mean, color = species)) +
-                                geom_point() +
-                                geom_line() +
+                                stat_smooth(method = "lm") +
                                 theme(legend.position = "bottom") +
                                 labs(x = "Mean Temperature (C*)", y = "Mean Mass (g?)")), 
     combined = purrr::pmap(list(temp_by_year, mass_by_year, mass_by_temp), 
                            ~ cowplot::plot_grid(plot_grid(..1), plot_grid(..2), 
                                                 plot_grid(..3), ncol = 1))
   )
-plots_df$combined[1]
 
 # Save final figure for each site
-# TODO: fix heights and widths of plots
 sites = unique(occurrences_with_temp$site)
 site_file_names = paste0("plots/", sites, "/", sites, "_main.png")
 ggsave_args = list(filename = site_file_names, 
-                   plot = plots_df$combined)
+                   plot = plots_df$combined, 
+                   width = 5, 
+                   height = 15)
 pmap(ggsave_args, ggsave)
