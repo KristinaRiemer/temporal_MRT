@@ -8,6 +8,14 @@ if(!file.exists(occurrences_path)){
 }
 occurrences = read.csv(occurrences_path)
 
+# Download and read in plots data
+plots_path = "data/portal/raw/plots.csv"
+if(!file.exists(plots_path)){
+  download.file(url = "https://raw.githubusercontent.com/weecology/PortalData/master/SiteandMethods/Portal_plots.csv", 
+                destfile = plots_path)
+}
+plots = read.csv(plots_path)
+
 # List of rodent species
 species_path = "data/portal/raw/portal_dev_rodent_species.csv"
 species = read.csv(species_path)
@@ -15,8 +23,10 @@ species_rodents = species %>%
   filter(rodent == 1)
 
 # Remove occurrences and get annual species masses
-# TODO: add test to make sure there are no NA values in weight or species columns
 clean_occurrences = occurrences %>% 
+  left_join(plots, by = c("yr" = "year", "mo" = "month", "plot" = "plot")) %>% 
+  filter(treatment == "control")
+clean_occurrences = clean_occurrences %>% 
   filter(!is.na(wgt), 
          !is.na(species), 
          species %in% species_rodents$species_code, 
