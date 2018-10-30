@@ -65,7 +65,7 @@ Add Portal lat/lon to locations dataframe.
 
 Notes
 
-* From "Materials and Methods" section in Aguilera et al. (2015)
+* From "Materials and Methods" section in Aguilera et al. (2016)
 ![](../../fray_jorge_location.png)
 * Expect latitude to be -30ish and longitude to be -71ish
 

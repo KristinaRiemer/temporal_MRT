@@ -27,6 +27,8 @@ occurrences = occurrences %>%
 # Remove occurrences and get annual species masses
 # TODO: add test to make sure there are no NA values in weight or species columns
 clean_occurrences = occurrences %>% 
+  filter(trt == "+D+P")
+clean_occurrences = occurrences %>% 
   filter(!is.na(wt), 
          !is.na(sp), 
          sst == 2) %>% 
