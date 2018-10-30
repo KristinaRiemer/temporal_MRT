@@ -15,7 +15,7 @@ for(each_site in unique(occurrences$site)){
     select(year, avg_temp)
   occurrences_by_site = occurrences %>% 
     filter(site == each_site) %>% 
-    select(species, yr, inds, mass_mean, mass_sd)
+    select(species, yr, inds, mass_mean, mass_sd, scientific_name)
   occurrences_with_temp_by_site = occurrences_by_site %>%
     left_join(annual_temps_by_site, by = c("yr" = "year"))
   occurrences_with_temp_by_site$site = as.factor(each_site)
@@ -24,6 +24,7 @@ for(each_site in unique(occurrences$site)){
 
 # Retain only species with five years of data and 15 individuals per each year
 occurrences_with_temp = occurrences_with_temp %>% 
+  filter(!is.na(avg_temp)) %>% 
   filter(inds >= 15) %>% 
   group_by(site, species) %>% 
   mutate(num_yrs = n_distinct(yr)) %>% 
