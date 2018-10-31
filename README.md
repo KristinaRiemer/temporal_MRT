@@ -17,6 +17,10 @@ Versions:
 * broom_0.4.3
 * cowplot_0.9.1
 * purrr_0.2.4
+* flextable_0.4.5
+* textreadr_0.9.0
+* WordR_0.3.1
+* sp_1.3-1
 
 ## Data
 
