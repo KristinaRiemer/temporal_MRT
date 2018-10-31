@@ -1,4 +1,6 @@
 library(dplyr)
+library(WordR)
+library(flextable)
 
 # Read in occurrences with temperature data
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
@@ -19,3 +21,10 @@ by_site_summary = occurrences_with_temp %>%
             max_inds = max(inds), 
             min_yr = min(num_yrs), 
             max_yr = max(num_yrs))
+
+# Save both dataframes as tables in .docx
+ft_across_site_summary = flextable(across_site_summary)
+ft_by_site_summary = flextable(by_site_summary)
+FT = list(ft_across_site_summary = ft_across_site_summary, 
+          ft_by_site_summary = ft_by_site_summary)
+body_add_flextables("plots/summary_tables_initial.docx", "plots/summary_tables.docx", FT)
