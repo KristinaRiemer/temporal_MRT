@@ -20,6 +20,13 @@ codes_list = codes_url %>%
 codes_list = codes_list[597:759]
 codes_df = data.frame(code = codes_list[seq(1, 161, by = 5)], 
                       scientific_name = codes_list[seq(3, 163, by = 5)])
+add_codes_df = data.frame(code = c("pmbo", "pmdi", "pmer", "pmle", "pmma", 
+                                        "pmtr", "pmsp"), 
+                          scientific_name = c("Peromyscus boylii", "Peromyscus difficilis", 
+                                            "Peromyscus eremicus", "Peromyscus leucopus", 
+                                            "Peromyscus maniculatus", "Peromyscus truei", 
+                                            "Peromyscus sp."))
+codes_df = bind_rows(codes_df, add_codes_df)
 
 # Remove occurrences and get annual species masses
 clean_occurrences = occurrences %>% 
