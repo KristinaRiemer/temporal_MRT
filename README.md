@@ -37,11 +37,11 @@ Versions:
 	* `site_locations.Rmd` compiles the coordinates for each site, including documentation for sources
 	* `site_temps.R` converts site coordinates to temperature raster format, plots them on temperature data from a single month, and extracts all annual temperatures for all sites
 	* `species_temps.R` combines mass and temperature datasets for each site together
-* Scripts for statistical analysis and visualization in `scripts/analysis`, should be able to run them in any order because they are standalone
-	* `main_fig.R` plots the main combined figure for each site; this includes annual temperature, annual mean mass per species, and temperature-mass relationship
+* Scripts for statistical analysis and visualization in `scripts/analysis`
+	* `site_summary_stats.R` creates a Word document from `plots/summmary_tables_initial.docx` that contains two tables, one across all sites and one by sites, summarizing number of species, individuals, etc. 
+	* `lin_reg.R` saves r and p-values from temperature-mass relationship linear regressions; must be run before `main_fig.R`
+	* `main_fig.R` plots the main combined figure for each site; this includes annual temperature, annual mean mass per species, temperature-mass relationship, and r distribution
 	* `supp_all_sp.R` plots the mass over time and temperature-mass relationship for each species individually
-	* `lin_reg.R` runs linear regression on each species temperature-mass relationship, extracts r and p-values, and plots these values
-	* `size_distributions.R` plots size distribution of community across time, both at the species and individual levels
 * Entire rough pipeline, including end figures, in `scripts/initial_cleaning_analysis.Rmd`; get html rendering of R Notebook by running all of the code chunks and selecting `Preview`
 * Very simple first data and figures in `scripts/initial_cleaning_analysis.R`
 
