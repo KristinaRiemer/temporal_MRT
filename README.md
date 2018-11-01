@@ -41,6 +41,7 @@ Versions:
 	* `site_summary_stats.R` creates a Word document from `plots/summmary_tables_initial.docx` that contains two tables, one across all sites and one by sites, summarizing number of species, individuals, etc. 
 	* `lin_reg.R` saves r and p-values from temperature-mass relationship linear regressions; must be run before `main_fig.R`
 	* `main_fig.R` plots the main combined figure for each site; this includes annual temperature, annual mean mass per species, temperature-mass relationship, and r distribution
+	* `synth_fig.R` plots percent change in mass of each species against the change in temperature at their respective sites
 	* `supp_all_sp.R` plots the mass over time and temperature-mass relationship for each species individually
 * Entire rough pipeline, including end figures, in `scripts/initial_cleaning_analysis.Rmd`; get html rendering of R Notebook by running all of the code chunks and selecting `Preview`
 * Very simple first data and figures in `scripts/initial_cleaning_analysis.R`

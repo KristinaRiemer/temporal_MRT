@@ -31,4 +31,5 @@ mkdir plots/sevilleta
 Rscript scripts/analysis/site_summary_stats.R
 Rscript scripts/analysis/lin_reg.R
 Rscript scripts/analysis/main_fig.R
+Rscript scripts/analysis/synth_fig.R
 Rscript scripts/analysis/supp_all_sp.R
