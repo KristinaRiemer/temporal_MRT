@@ -6,51 +6,20 @@ library(cowplot)
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
 occurrences_with_temp = read.csv(occurrences_with_temp_path)
 
-# test case
-all_sev = occurrences_with_temp[occurrences_with_temp$site == "sevilleta",]
-sev_model = lm(avg_temp ~ yr, data = all_sev)
-sev_ends = data.frame(yr = c(min(all_sev$yr), max(all_sev$yr)))
-sev_ends$avg_temp = c(predict(sev_model, sev_ends))
-temp_change = sev_ends$avg_temp[2] - sev_ends$avg_temp[1]
-
-one_sev = occurrences_with_temp[occurrences_with_temp$site == "sevilleta" & occurrences_with_temp$species == "onar",]
-#1 includes all temps, 2 includes only temps from years with masses
-one_sev_ends1 = 
-
-one_sev_ends2 = 
-
-
-ggplot(all_sev, aes(x = yr, y = avg_temp)) +
-  geom_point() +
-  stat_smooth(method = "lm")
-ggplot(one_sev, aes(x = yr, y = avg_temp)) +
-  geom_point() +
-  stat_smooth(method = "lm")
-
-# Calculate absolute change in temperature at each site
-temp_changes = data.frame(site = factor(), temp_change = numeric())
-for(site in unique(occurrences_with_temp$site)){
-  site_occurrences = occurrences_with_temp[occurrences_with_temp$site == site,]
-  site_model = lm(avg_temp ~ yr, data = site_occurrences)
-  site_endpoints = data.frame(yr = c(min(site_occurrences$yr), max(site_occurrences$yr)))
-  site_endpoints$avg_temp = c(predict(site_model, site_endpoints))
-  temp_change = site_endpoints$avg_temp[2] - site_endpoints$avg_temp[1]
-  site_temp_change = data.frame(site, temp_change)
-  temp_changes = rbind(temp_changes, site_temp_change)
-}
-
 # Calculate absolute change in temperature for each species at each site
-temp_changes2 = data.frame(site = factor(), temp_change = numeric())
+temp_changes = data.frame(site = factor(), temp_change = numeric())
 for(site in unique(occurrences_with_temp$site)){
   site_occurrences = occurrences_with_temp[occurrences_with_temp$site == site,]
   for(species in unique(site_occurrences$species)){
     species_occurrences = site_occurrences[site_occurrences$species == species,]
-    temp_model = lm(avg_temp ~ yr, data = species_occurrences)
-    temp_endpoints = data.frame(yr = c(min(species_occurrences$yr), max(species_occurrences$yr)))
-    temp_endpoints$avg_temp = c(predict(temp_model, temp_endpoints))
-    temp_change2 = temp_endpoints$avg_temp[2] - temp_endpoints$avg_temp[1]
-    temp_change_df = data.frame(site, species, temp_change2)
-    temp_changes2 = rbind(temp_changes2, temp_change_df)
+    species_endpoints = data.frame(yr = c(min(species_occurrences$yr), max(species_occurrences$yr)))
+    temp_occurrences = site_occurrences %>% 
+      filter(yr >= species_endpoints$yr[1] & yr <= species_endpoints$yr[2])
+    temp_model = lm(avg_temp ~ yr, data = temp_occurrences)
+    species_endpoints$avg_temp = c(predict(temp_model, species_endpoints))
+    temp_change = species_endpoints$avg_temp[2] - species_endpoints$avg_temp[1]
+    temp_change_df = data.frame(site, species, temp_change)
+    temp_changes = rbind(temp_changes, temp_change_df)
   }
 }
 
@@ -70,7 +39,7 @@ for(site in unique(occurrences_with_temp$site)){
 }
 
 # Combine change dataframes and plot
-temp_mass_changes = left_join(mass_changes, temp_changes, by = "site")
+temp_mass_changes = left_join(mass_changes, temp_changes, by = c("site", "species"))
 
 temp_mass_changes = temp_mass_changes %>% 
   mutate(Site = case_when(site == "portal" ~ "Portal", 
