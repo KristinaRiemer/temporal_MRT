@@ -59,9 +59,18 @@ if(!file.exists(single_month_path)){
 single_month_temp = read.csv(single_month_path)
 
 # Plot site locations on top of single month of temperature
-ggplot(single_month_temp, aes(lon, lat)) +
-  geom_tile(aes(fill = temp)) +
-  geom_point(data = site_locations, aes(x = grid_lon, y = grid_lat)) +
+single_month_temp$Temperature = single_month_temp$temp
+site_locations$Site = c("Portal", "Fray Jorge", "Sevilleta")
+site_locations_map = ggplot(single_month_temp, aes(lon, lat)) +
+  geom_tile(aes(fill = Temperature)) +
+  geom_point(data = site_locations, aes(x = grid_lon, y = grid_lat, 
+                                        shape = Site), size = 2) +
+  theme(axis.title = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank()) +
   scale_y_reverse()
 
 # Create temperature month index lookup table
@@ -93,6 +102,10 @@ annual_temps = monthly_temps %>%
   group_by(site, year) %>% 
   summarise(avg_temp = mean(temp), 
             avg_temp_sd = sd(temp))
+
+# Save map of site locations & temperatures
+site_locations_map_path = "plots/site_locations_map.png"
+ggsave(site_locations_map_path, plot = site_locations_map)
 
 # Save site annual temperatures
 annual_temps_path = "data/site_annual_temps.csv"
