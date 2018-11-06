@@ -105,7 +105,7 @@ annual_temps = monthly_temps %>%
 
 # Save map of site locations & temperatures
 site_locations_map_path = "plots/site_locations_map.png"
-ggsave(site_locations_map_path, plot = site_locations_map)
+ggsave(site_locations_map_path, plot = site_locations_map, width = 10, height = 7)
 
 # Save site annual temperatures
 annual_temps_path = "data/site_annual_temps.csv"

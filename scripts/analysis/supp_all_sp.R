@@ -2,6 +2,7 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 library(ggplot2)
+library(cowplot)
 
 # Read in occurrences with temperature data
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
@@ -16,17 +17,35 @@ plots_df = occurrences_with_temp %>%
                                 geom_point() +
                                 stat_smooth(method = "lm") +
                                 facet_wrap(~species, scales = "free") +
-                                labs(x = "Year", y = "Mean Mass (g?)")),
+                                labs(x = "Year", y = "Mean Mass (g)")),
     mass_by_temp = purrr::map(data, ~ ggplot(., aes(avg_temp, mass_mean)) +
                        geom_point() +
                        stat_smooth(method = "lm") +
                        facet_wrap(~species, scales = "free") + 
-                       labs(x = "Mean Temperature (C*)", y = "Mean Mass (g?)"))
+                       labs(x = "Mean Temp (C*)", y = "Mean Mass (g)"))
     )
 
+mass_by_year_combined = purrr::pmap(list(plots_df$mass_by_year[1], plots_df$mass_by_year[2], 
+                                        plots_df$mass_by_year[3]), 
+                                   ~ cowplot::plot_grid(plot_grid(..1), plot_grid(..2), 
+                                                        plot_grid(..3), 
+                                                        labels = c("A", "B", "C")))
+
+mass_by_temp_combined = purrr::pmap(list(plots_df$mass_by_temp[1], plots_df$mass_by_temp[2], 
+                                        plots_df$mass_by_temp[3]), 
+                                   ~ cowplot::plot_grid(plot_grid(..1), plot_grid(..2), 
+                                                        plot_grid(..3), 
+                                                        labels = c("A", "B", "C")))
+
 # Save both all species plots for each site
-sites = unique(occurrences_with_temp$site)
-site_file_names_mass = paste0("plots/", sites, "/", sites, "_mass_supp.png")
-site_file_names_mrt = paste0("plots/", sites, "/", sites, "_mrt_supp.png")
-map2(site_file_names_mass, plots_df$mass_by_year, ggsave)
-map2(site_file_names_mrt, plots_df$mass_by_temp, ggsave)
+mass_by_year_args = list("plots/supp_mass_by_year.png", plot = mass_by_year_combined, 
+                         width = 15, height = 12)
+pmap(mass_by_year_args, ggsave)
+
+mass_by_temp_args = list("plots/supp_mass_by_temp.png", plot = mass_by_temp_combined, 
+                         width = 15, height = 12)
+pmap(mass_by_temp_args, ggsave)
+
+
+
+
