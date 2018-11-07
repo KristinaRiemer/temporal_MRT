@@ -6,6 +6,10 @@ library(cowplot)
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
 occurrences_with_temp = read.csv(occurrences_with_temp_path)
 
+# Read in model results data with statistical significance
+model_stats_path = "data/model_stats.csv"
+model_stats = read.csv(model_stats_path)
+
 # Calculate absolute change in temperature for each species at each site
 temp_changes = data.frame(site = factor(), temp_change = numeric())
 for(site in unique(occurrences_with_temp$site)){
@@ -38,18 +42,26 @@ for(site in unique(occurrences_with_temp$site)){
   }
 }
 
-# Combine change dataframes and plot
+# Combine change dataframes with model significance data and plot
 temp_mass_changes = left_join(mass_changes, temp_changes, by = c("site", "species"))
+
+temp_mass_changes = left_join(temp_mass_changes, model_stats, by = c("site", "species"))
+temp_mass_changes = temp_mass_changes %>% 
+  mutate(Significant = case_when(pvalue_sig == "yes" ~ "Yes", 
+                                 pvalue_sig == "no" ~ "No"))
 
 temp_mass_changes = temp_mass_changes %>% 
   mutate(Site = case_when(site == "portal" ~ "Portal", 
                                 site == "frayjorge" ~ "Fray Jorge", 
                                 site == "sevilleta" ~ "Sevilleta"))
-temp_mass_changes_plot = ggplot(temp_mass_changes, aes(x = temp_change, y = mass_change, color = Site)) +
+
+temp_mass_changes_plot = ggplot(temp_mass_changes, aes(x = temp_change, y = mass_change, 
+                                                       color = Site, shape = Significant)) +
   geom_point() +
   lims(x = c(-1, 1), y = c(-35, 35)) +
   geom_vline(xintercept = 0) +
   geom_hline(yintercept = 0) +
+  scale_shape_manual(values = c(1, 16)) +
   labs(x = "Change in temperature (*C)", y = "Change in mass (%)") +
   theme_cowplot()
 

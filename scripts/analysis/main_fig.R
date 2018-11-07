@@ -14,6 +14,11 @@ lin_reg_mass = read.csv(lin_reg_mass_path)
 lin_reg_mrt_path = "data/lin_reg_mrt.csv"
 lin_reg_mrt = read.csv(lin_reg_mrt_path)
 
+# Read in model results data with statistical significance and combine with r dist dataframe
+model_stats_path = "data/model_stats.csv"
+model_stats = read.csv(model_stats_path)
+lin_reg_mrt = left_join(lin_reg_mrt, model_stats, by = c("site", "species"))
+
 # Create four plots for each site
 occurrences_with_temp = occurrences_with_temp %>% 
   mutate(temp_by_year_label = case_when(site == "portal" ~ "A", 
@@ -63,11 +68,13 @@ three_plots_df = occurrences_with_temp %>%
 mrt_plot_df = lin_reg_mrt %>% 
   group_by(site) %>% 
   nest() %>% 
-  mutate(r_dist = purrr::map(data, ~ggplot(., aes(x = r)) +
+  mutate(r_dist = purrr::map(data, ~ggplot(., aes(x = r, fill = pvalue_sig)) +
                                geom_histogram() +
                                xlim(c(-1, 1)) +
                                geom_vline(xintercept = 0, color = "red") +
                                labs(x = "R", y = "Number of species") +
+                               scale_fill_manual(values = c("purple", "darkgreen")) +
+                               theme(legend.position = "none") +
                                geom_text(aes(x = -1, y = 2, label = r_dist_label), 
                                          fontface = "bold"))
   )

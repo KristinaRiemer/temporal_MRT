@@ -8,8 +8,9 @@ library(lmtest)
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
 occurrences_with_temp = read.csv(occurrences_with_temp_path)
 
+# Run model on all species, creating diagnostics plots and saving p-values
 pdf(file = "plots/time_series_model_diagnostics.pdf")
-species_pvalues = data.frame(site = factor(), species = factor(), pvalue = numeric())
+model_stats = data.frame(site = factor(), species = factor(), pvalue = numeric())
 for(site in unique(occurrences_with_temp$site)){
   site_occurrences = occurrences_with_temp[occurrences_with_temp$site == site,]
   min_year = min(site_occurrences$yr)
@@ -29,9 +30,16 @@ for(site in unique(occurrences_with_temp$site)){
     tsdisplay(residuals(species_model), main = title_pg2)
     species_pvalue = data.frame(site = site, species = species, 
                                 pvalue = coeftest(species_model)[dim(coeftest(species_model))[1], dim(coeftest(species_model))[2]])
-    species_pvalues = rbind(species_pvalues, species_pvalue)
+    model_stats = rbind(model_stats, species_pvalue)
   }
 }
 dev.off()
 
-species_pvalues$pvalue_adjust = p.adjust(species_pvalues$pvalue)
+# Adjust p-values and add significance column
+model_stats$pvalue_adjust = p.adjust(model_stats$pvalue)
+model_stats = model_stats %>% 
+  mutate(pvalue_sig = case_when(pvalue_adjust <= 0.05 ~ "yes", 
+                                pvalue_adjust > 0.05 ~ "no"))
+
+# Save dataframe as csv
+write.csv(model_stats, "data/model_stats.csv")
