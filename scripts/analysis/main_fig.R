@@ -52,7 +52,7 @@ three_plots_df = occurrences_with_temp %>%
     mass_by_year = purrr::map(data, ~ ggplot(., aes(yr, mass_mean, color = species)) +
                                 geom_point() +
                                 stat_smooth(method = "lm", se = FALSE) +
-                                theme(legend.position = "none") +
+                                theme(legend.position = "bottom") +
                                 labs(x = "Year", y = "Mean Mass (g)") +
                                 geom_text(aes(x = min(yr), y = max(mass_mean), label = mass_by_year_label), 
                                           fontface = "bold", color = "black")),
