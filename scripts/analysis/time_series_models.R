@@ -3,6 +3,8 @@ library(tidyr)
 library(ggplot2)
 library(forecast)
 library(lmtest)
+library(purrr)
+library(cowplot)
 
 # Read in occurrences with temperature data
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
@@ -23,7 +25,6 @@ for(site in unique(occurrences_with_temp$site)){
     title_pg1 = paste0("Mass time series diagnostics for ", species, " (", site, ")")
     Acf(mass_ts, main = title_pg1)
     Pacf(mass_ts, main = "")
-    # TODO: test some autos against customs
     temp_ts = ts(species_occurrences$avg_temp)
     species_model = auto.arima(mass_ts, xreg = temp_ts)
     title_pg2 = paste0("Model residuals for ", species, " (", site, ")")
@@ -41,5 +42,41 @@ model_stats = model_stats %>%
   mutate(pvalue_sig = case_when(pvalue_adjust <= 0.05 ~ "yes", 
                                 pvalue_adjust > 0.05 ~ "no"))
 
+# Combine occurrences and model results
+occurrences_with_temp = left_join(occurrences_with_temp, model_stats, by = c("species" = "species", 
+                                                             "site" = "site"))
+
+# Plot mass and temp time series with model p-values
+occurrences_with_temp = occurrences_with_temp %>% 
+  mutate(pvalue_star = case_when(pvalue_sig == "no" ~ "", 
+                                 pvalue_sig == "yes" ~ "*"),
+         pvalue_adjust_plot = round(pvalue_adjust, digits = 3), 
+         plot_label = paste0(species, " (p = ", pvalue_adjust_plot, ") ", pvalue_star))
+
+plots_df = occurrences_with_temp %>% 
+  group_by(site) %>% 
+  nest() %>% 
+  mutate(
+    mass_temp_by_year = purrr::map(data, ~ ggplot(.) +
+                                     geom_line(aes(x = yr, y = mass_mean)) +
+                                     geom_point(aes(x = yr, y = mass_mean)) +
+                                     geom_line(aes(x = yr, y = avg_temp, color = "red")) +
+                                     geom_point(aes(x = yr, y = avg_temp, color = "red")) +
+                                     labs(x = "Year", y = "Mean Temp (C*)/Mean Mass (g)") +
+                                     theme(legend.position = "none") +
+                                     facet_wrap(~plot_label, scales = "free"))
+  )
+
+combined = purrr::pmap(list(plots_df$mass_temp_by_year[1], plots_df$mass_temp_by_year[2], 
+                            plots_df$mass_temp_by_year[3]), 
+                       ~ cowplot::plot_grid(plot_grid(..1), plot_grid(..2), 
+                                            plot_grid(..3), 
+                                            labels = c("A", "B", "C")))
+
 # Save dataframe as csv
 write.csv(model_stats, "data/model_stats.csv")
+
+# Save plot
+ggsave_args = list("plots/time_series_plot.png", plot = combined, 
+                         width = 17, height = 12)
+pmap(ggsave_args, ggsave)
