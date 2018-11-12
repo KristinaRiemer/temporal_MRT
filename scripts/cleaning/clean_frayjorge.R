@@ -1,6 +1,7 @@
 library(rdataretriever)
 library(tidyr)
 library(dplyr)
+library(XML)
 
 # Download and read in occurrences data
 occurrences_path = "data/frayjorge/raw/fray_jorge_ecology_mammals.csv"
@@ -10,7 +11,6 @@ if(!file.exists(occurrences_path)){
 occurrences = read.csv(occurrences_path, na.strings = ".")
 
 # Create species codes list
-library(XML)
 codes_url = "http://www.esapubs.org/archive/ecol/E094/084/Fray_Jorge_Small_Mammal_Metadata.php"
 codes_list = readHTMLTable(codes_url)
 codes_df = data.frame(codes_list[4])
