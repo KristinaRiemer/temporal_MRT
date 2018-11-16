@@ -20,7 +20,11 @@ by_site_summary = occurrences_with_temp %>%
             min_inds = min(inds), 
             max_inds = max(inds), 
             min_yr = min(num_yrs), 
-            max_yr = max(num_yrs))
+            max_yr = max(num_yrs)) %>% 
+  mutate(min_inds = as.integer(min_inds), 
+         max_inds = as.integer(max_inds), 
+         min_yr = as.integer(min_yr), 
+         max_yr = as.integer(max_yr))
 
 # Create dataframe with summary values and states across sites
 across_site_summary = by_site_summary %>% 
@@ -42,7 +46,6 @@ ft_by_site_summary = set_header_labels(ft_by_site_summary,
                                        max_inds = "Individuals (max)", 
                                        min_yr = "Years (min)", 
                                        max_yr = "Years (max)")
-ft_by_site_summary
 
 # Put flextables into .docs
 FT = list(ft_across_site_summary = ft_across_site_summary, 
