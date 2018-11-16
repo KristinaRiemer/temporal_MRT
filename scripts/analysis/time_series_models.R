@@ -26,15 +26,45 @@ for(site in unique(occurrences_with_temp$site)){
     Acf(mass_ts, main = title_pg1)
     Pacf(mass_ts, main = "")
     temp_ts = ts(species_occurrences$avg_temp)
-    species_model = auto.arima(mass_ts, xreg = temp_ts)
+    exog_model = auto.arima(mass_ts, xreg = temp_ts)
+    exog_pvalue = coeftest(exog_model)[dim(coeftest(exog_model))[1], dim(coeftest(exog_model))[2]]
     title_pg2 = paste0("Model residuals for ", species, " (", site, ")")
-    tsdisplay(residuals(species_model), main = title_pg2)
-    species_pvalue = data.frame(site = site, species = species, 
-                                pvalue = coeftest(species_model)[dim(coeftest(species_model))[1], dim(coeftest(species_model))[2]])
-    model_stats = rbind(model_stats, species_pvalue)
+    tsdisplay(residuals(exog_model), main = title_pg2)
+    mass_model = Arima(mass_ts, order = arimaorder(exog_model), include.drift = TRUE)
+    mass_pvalue = coeftest(mass_model)[dim(coeftest(mass_model))[1], dim(coeftest(mass_model))[2]]
+    mass_dir_temp = coeftest(mass_model)[dim(coeftest(mass_model))[1], 1]
+    if(coeftest(mass_model)[dim(coeftest(mass_model))[1], 1] < 0){
+      mass_dir = "neg"
+    } else {
+      mass_dir = "pos"
+    }
+    pvalues = data.frame(site = site, species = species, exog_pvalue = exog_pvalue, 
+                         mass_pvalue = mass_pvalue, mass_dir = mass_dir, mass_dir_temp = mass_dir_temp)
+    model_stats = rbind(model_stats, pvalues)
   }
 }
 dev.off()
+
+
+# TODO: pull out order from auto.arima with arimaorder, put it in as order argument for Arima,
+# run this with include.drift = TRUE, then use coeftest to pull out drift p-value
+example_sp = occurrences_with_temp %>% 
+  filter(species == "onar")
+ggplot(example_sp, aes(x = yr, y = mass_mean)) +
+  geom_point() +
+  geom_line()
+example_sp_ts = ts(example_sp$mass_mean)
+example_sp_temp_ts = ts(example_sp$avg_temp)
+example_sp_model_exog = auto.arima(example_sp_ts, xreg = example_sp_temp_ts)
+coeftest(example_sp_model_exog)
+example_sp_order = arimaorder(example_sp_model_exog)
+example_sp_model_no = Arima(example_sp_ts, order = example_sp_order)
+coeftest(example_sp_model_no)[dim(coeftest(example_sp_model_no))[1], dim(coeftest(example_sp_model_no))[2]]
+example_sp_model_drift = Arima(example_sp_ts, order = example_sp_order, include.drift = TRUE)
+coeftest(example_sp_model_drift)[dim(coeftest(example_sp_model_drift))[1], dim(coeftest(example_sp_model_drift))[2]]
+coeftest(example_sp_model_drift)[dim(coeftest(example_sp_model_drift))[1], 1]
+
+
 
 # Adjust p-values and add significance column
 model_stats$pvalue_adjust = p.adjust(model_stats$pvalue)
