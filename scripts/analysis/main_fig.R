@@ -9,8 +9,6 @@ occurrences_with_temp_path = "data/occurrences_with_temp.csv"
 occurrences_with_temp = read.csv(occurrences_with_temp_path)
 
 # Read in linear regression results for both yearly mass and mass-temp relationships
-lin_reg_mass_path = "data/lin_reg_mass.csv"
-lin_reg_mass = read.csv(lin_reg_mass_path)
 lin_reg_mrt_path = "data/lin_reg_mrt.csv"
 lin_reg_mrt = read.csv(lin_reg_mrt_path)
 
@@ -34,7 +32,7 @@ lin_reg_mrt = lin_reg_mrt %>%
   mutate(r_dist_label = case_when(site == "portal" ~ "D", 
                             site == "frayjorge" ~ "E", 
                             site == "sevilleta" ~ "F"))
-lin_reg_mass = lin_reg_mass %>% 
+model_stats = model_stats %>% 
   mutate(slope_dist_label = case_when(site == "portal" ~ "G", 
                             site == "frayjorge" ~ "H", 
                             site == "sevilleta" ~ "I"))
@@ -68,26 +66,28 @@ three_plots_df = occurrences_with_temp %>%
 mrt_plot_df = lin_reg_mrt %>% 
   group_by(site) %>% 
   nest() %>% 
-  mutate(r_dist = purrr::map(data, ~ggplot(., aes(x = r, fill = pvalue_sig)) +
+  mutate(r_dist = purrr::map(data, ~ggplot(., aes(x = r, fill = exog_pvalue_sig)) +
                                geom_histogram() +
                                xlim(c(-1, 1)) +
                                geom_vline(xintercept = 0, color = "red") +
                                labs(x = "R", y = "Number of species") +
-                               scale_fill_manual(values = c("purple", "darkgreen")) +
+                               scale_fill_manual(values = c("gray", "black")) +
                                theme(legend.position = "none") +
                                geom_text(aes(x = -1, y = 2, label = r_dist_label), 
                                          fontface = "bold"))
   )
 
-mass_plot_df = lin_reg_mass %>% 
+mass_plot_df = model_stats %>% 
   group_by(site) %>% 
   nest() %>% 
-  mutate(slope_dist = purrr::map(data, ~ggplot(., aes(x = slope)) +
+  mutate(slope_dist = purrr::map(data, ~ggplot(., aes(x = mass_dir, fill = mass_pvalue_sig)) +
                                    geom_histogram() +
-                                   xlim(c(-1, 1)) +
+                                   xlim(c(-2.1, 2.1)) +
                                    geom_vline(xintercept = 0, color = "red") +
-                                   labs(x = "Yearly mass slope", y = "Number of species") +
-                                   geom_text(aes(x = -1, y = 3, label = slope_dist_label), 
+                                   labs(x = "Mass time series trend", y = "Number of species") +
+                                   scale_fill_manual(values = c("gray", "black")) +
+                                   theme(legend.position = "none") +
+                                   geom_text(aes(x = -2, y = 3, label = slope_dist_label), 
                                              fontface = "bold"))
   )
 

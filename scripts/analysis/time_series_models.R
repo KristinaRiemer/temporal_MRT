@@ -10,7 +10,7 @@ library(cowplot)
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
 occurrences_with_temp = read.csv(occurrences_with_temp_path)
 
-# Run model on all species, creating diagnostics plots and saving p-values
+# Run models on all species, creating diagnostics plots and saving p-values
 pdf(file = "plots/time_series_model_diagnostics.pdf")
 model_stats = data.frame(site = factor(), species = factor(), pvalue = numeric())
 for(site in unique(occurrences_with_temp$site)){
@@ -32,45 +32,22 @@ for(site in unique(occurrences_with_temp$site)){
     tsdisplay(residuals(exog_model), main = title_pg2)
     mass_model = Arima(mass_ts, order = arimaorder(exog_model), include.drift = TRUE)
     mass_pvalue = coeftest(mass_model)[dim(coeftest(mass_model))[1], dim(coeftest(mass_model))[2]]
-    mass_dir_temp = coeftest(mass_model)[dim(coeftest(mass_model))[1], 1]
-    if(coeftest(mass_model)[dim(coeftest(mass_model))[1], 1] < 0){
-      mass_dir = "neg"
-    } else {
-      mass_dir = "pos"
-    }
+    mass_dir = coeftest(mass_model)[dim(coeftest(mass_model))[1], 1]
     pvalues = data.frame(site = site, species = species, exog_pvalue = exog_pvalue, 
-                         mass_pvalue = mass_pvalue, mass_dir = mass_dir, mass_dir_temp = mass_dir_temp)
+                         mass_pvalue = mass_pvalue, mass_dir = mass_dir)
     model_stats = rbind(model_stats, pvalues)
   }
 }
 dev.off()
 
-
-# TODO: pull out order from auto.arima with arimaorder, put it in as order argument for Arima,
-# run this with include.drift = TRUE, then use coeftest to pull out drift p-value
-example_sp = occurrences_with_temp %>% 
-  filter(species == "onar")
-ggplot(example_sp, aes(x = yr, y = mass_mean)) +
-  geom_point() +
-  geom_line()
-example_sp_ts = ts(example_sp$mass_mean)
-example_sp_temp_ts = ts(example_sp$avg_temp)
-example_sp_model_exog = auto.arima(example_sp_ts, xreg = example_sp_temp_ts)
-coeftest(example_sp_model_exog)
-example_sp_order = arimaorder(example_sp_model_exog)
-example_sp_model_no = Arima(example_sp_ts, order = example_sp_order)
-coeftest(example_sp_model_no)[dim(coeftest(example_sp_model_no))[1], dim(coeftest(example_sp_model_no))[2]]
-example_sp_model_drift = Arima(example_sp_ts, order = example_sp_order, include.drift = TRUE)
-coeftest(example_sp_model_drift)[dim(coeftest(example_sp_model_drift))[1], dim(coeftest(example_sp_model_drift))[2]]
-coeftest(example_sp_model_drift)[dim(coeftest(example_sp_model_drift))[1], 1]
-
-
-
 # Adjust p-values and add significance column
-model_stats$pvalue_adjust = p.adjust(model_stats$pvalue)
+model_stats$exog_pvalue_adjust = p.adjust(model_stats$exog_pvalue)
+model_stats$mass_pvalue_adjust = p.adjust(model_stats$mass_pvalue)
 model_stats = model_stats %>% 
-  mutate(pvalue_sig = case_when(pvalue_adjust <= 0.05 ~ "yes", 
-                                pvalue_adjust > 0.05 ~ "no"))
+  mutate(exog_pvalue_sig = case_when(exog_pvalue_adjust <= 0.05 ~ "yes", 
+                                     exog_pvalue_adjust > 0.05 ~ "no"), 
+         mass_pvalue_sig = case_when(mass_pvalue_adjust <= 0.05 ~ "yes", 
+                                     mass_pvalue_adjust > 0.05 ~ "no"))
 
 # Combine occurrences and model results
 occurrences_with_temp = left_join(occurrences_with_temp, model_stats, by = c("species" = "species", 
@@ -78,10 +55,10 @@ occurrences_with_temp = left_join(occurrences_with_temp, model_stats, by = c("sp
 
 # Plot mass and temp time series with model p-values
 occurrences_with_temp = occurrences_with_temp %>% 
-  mutate(pvalue_star = case_when(pvalue_sig == "no" ~ "", 
-                                 pvalue_sig == "yes" ~ "*"),
-         pvalue_adjust_plot = round(pvalue_adjust, digits = 3), 
-         plot_label = paste0(species, " (p = ", pvalue_adjust_plot, ") ", pvalue_star))
+  mutate(pvalue_star = case_when(exog_pvalue_sig == "no" ~ "", 
+                                 exog_pvalue_sig == "yes" ~ "*"),
+         exog_pvalue_adjust_plot = round(exog_pvalue_adjust, digits = 3), 
+         plot_label = paste0(species, " (p = ", exog_pvalue_adjust_plot, ") ", pvalue_star))
 
 plots_df = occurrences_with_temp %>% 
   group_by(site) %>% 
