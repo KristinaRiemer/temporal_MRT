@@ -11,7 +11,6 @@ occurrences_with_temp_path = "data/occurrences_with_temp.csv"
 occurrences_with_temp = read.csv(occurrences_with_temp_path)
 
 # Run models on all species, creating diagnostics plots and saving p-values
-pdf(file = "plots/time_series_model_diagnostics.pdf")
 model_stats = data.frame(site = factor(), species = factor(), pvalue = numeric())
 for(site in unique(occurrences_with_temp$site)){
   site_occurrences = occurrences_with_temp[occurrences_with_temp$site == site,]
@@ -25,11 +24,18 @@ for(site in unique(occurrences_with_temp$site)){
     title_pg1 = paste0("Mass time series diagnostics for ", species, " (", site, ")")
     Acf(mass_ts, main = title_pg1)
     Pacf(mass_ts, main = "")
+    folder = "plots/time_series_model_diagnostics/"
+    png_title1 = paste0(folder, site, species, "1", ".png")
+    dev.copy(png, png_title1)
+    dev.off()
     temp_ts = ts(species_occurrences$avg_temp)
     exog_model = auto.arima(mass_ts, xreg = temp_ts)
     exog_pvalue = coeftest(exog_model)[dim(coeftest(exog_model))[1], dim(coeftest(exog_model))[2]]
     title_pg2 = paste0("Model residuals for ", species, " (", site, ")")
     tsdisplay(residuals(exog_model), main = title_pg2)
+    png_title2 = paste0(folder, site, species, "2", ".png")
+    dev.copy(png, png_title2)
+    dev.off()
     mass_model = Arima(mass_ts, order = arimaorder(exog_model), include.drift = TRUE)
     mass_pvalue = coeftest(mass_model)[dim(coeftest(mass_model))[1], dim(coeftest(mass_model))[2]]
     mass_dir = coeftest(mass_model)[dim(coeftest(mass_model))[1], 1]
@@ -38,7 +44,6 @@ for(site in unique(occurrences_with_temp$site)){
     model_stats = rbind(model_stats, pvalues)
   }
 }
-dev.off()
 
 # Adjust p-values and add significance column
 model_stats$exog_pvalue_adjust = p.adjust(model_stats$exog_pvalue)
