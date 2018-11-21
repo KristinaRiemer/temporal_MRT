@@ -4,6 +4,8 @@ library(broom)
 library(ggplot2)
 library(purrr)
 library(cowplot)
+library(forecast)
+library(lmtest)
 
 # Read in temperature and occurrence data
 site_annual_temps = read.csv("data/site_annual_temps.csv")
@@ -53,76 +55,76 @@ occurrences_with_temp_moreyrs = occurrences_with_temp %>%
 # Create dataframe of slope for each species mass over time for three threshold datasets
 sites = unique(occurrences_with_temp$site)
 
-all_lm_mass_actual = data.frame(species = factor(), slope = numeric(), site = factor(), scientific_name = factor())
+model_stats_actual = data.frame()
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp_actual[occurrences_with_temp_actual$site == each_site,]
-  site_lm_mass = site_annual_masses %>% 
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ yr, data = .)), 
-           results = purrr::map(fit, tidy)) %>% 
-    unnest(results) %>% 
-    filter(term == "yr") %>% 
-    select(species, slope = estimate)
-  site_lm_mass$site = as.factor(each_site)
-  species_codes = site_annual_masses %>% 
-    select(species, scientific_name) %>% 
-    distinct(species, scientific_name)
-  site_lm_mass = left_join(site_lm_mass, species_codes, by = c("species" = "species"))
-  all_lm_mass_actual = rbind(all_lm_mass_actual, site_lm_mass)
+  min_year = min(site_annual_masses$yr)
+  max_year = max(site_annual_masses$yr)
+  for(species in unique(site_annual_masses$species)){
+    species_occurrences = site_annual_masses[site_annual_masses$species == species, ]
+    species_occurrences = complete(species_occurrences, yr = min_year:max_year)
+    mass_ts = ts(species_occurrences$mass_mean)
+    temp_ts = ts(species_occurrences$avg_temp)
+    exog_model = auto.arima(mass_ts, xreg = temp_ts)
+    mass_model = Arima(mass_ts, order = arimaorder(exog_model), include.drift = TRUE)
+    mass_dir = coeftest(mass_model)[dim(coeftest(mass_model))[1], 1]
+    values = data.frame(site = each_site, species = species, mass_dir = mass_dir)
+    model_stats_actual = rbind(model_stats_actual, values)
+  }
 }
-
-all_lm_mass_moreinds = data.frame(species = factor(), slope = numeric(), site = factor(), scientific_name = factor())
+  
+model_stats_moreinds = data.frame()
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp_moreinds[occurrences_with_temp_moreinds$site == each_site,]
-  site_lm_mass = site_annual_masses %>% 
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ yr, data = .)), 
-           results = purrr::map(fit, tidy)) %>% 
-    unnest(results) %>% 
-    filter(term == "yr") %>% 
-    select(species, slope = estimate)
-  site_lm_mass$site = as.factor(each_site)
-  species_codes = site_annual_masses %>% 
-    select(species, scientific_name) %>% 
-    distinct(species, scientific_name)
-  site_lm_mass = left_join(site_lm_mass, species_codes, by = c("species" = "species"))
-  all_lm_mass_moreinds = rbind(all_lm_mass_moreinds, site_lm_mass)
+  min_year = min(site_annual_masses$yr)
+  max_year = max(site_annual_masses$yr)
+  for(species in unique(site_annual_masses$species)){
+    species_occurrences = site_annual_masses[site_annual_masses$species == species, ]
+    species_occurrences = complete(species_occurrences, yr = min_year:max_year)
+    mass_ts = ts(species_occurrences$mass_mean)
+    temp_ts = ts(species_occurrences$avg_temp)
+    exog_model = auto.arima(mass_ts, xreg = temp_ts)
+    mass_model = Arima(mass_ts, order = arimaorder(exog_model), include.drift = TRUE)
+    mass_dir = coeftest(mass_model)[dim(coeftest(mass_model))[1], 1]
+    values = data.frame(site = each_site, species = species, mass_dir = mass_dir)
+    model_stats_moreinds = rbind(model_stats_moreinds, values)
+  }
 }
 
-all_lm_mass_moreyrs = data.frame(species = factor(), slope = numeric(), site = factor(), scientific_name = factor())
+model_stats_moreyrs = data.frame()
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp_moreyrs[occurrences_with_temp_moreyrs$site == each_site,]
-  site_lm_mass = site_annual_masses %>% 
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ yr, data = .)), 
-           results = purrr::map(fit, tidy)) %>% 
-    unnest(results) %>% 
-    filter(term == "yr") %>% 
-    select(species, slope = estimate)
-  site_lm_mass$site = as.factor(each_site)
-  species_codes = site_annual_masses %>% 
-    select(species, scientific_name) %>% 
-    distinct(species, scientific_name)
-  site_lm_mass = left_join(site_lm_mass, species_codes, by = c("species" = "species"))
-  all_lm_mass_moreyrs = rbind(all_lm_mass_moreyrs, site_lm_mass)
+  min_year = min(site_annual_masses$yr)
+  max_year = max(site_annual_masses$yr)
+  for(species in unique(site_annual_masses$species)){
+    species_occurrences = site_annual_masses[site_annual_masses$species == species, ]
+    species_occurrences = complete(species_occurrences, yr = min_year:max_year)
+    mass_ts = ts(species_occurrences$mass_mean)
+    temp_ts = ts(species_occurrences$avg_temp)
+    exog_model = auto.arima(mass_ts, xreg = temp_ts)
+    mass_model = Arima(mass_ts, order = arimaorder(exog_model), include.drift = TRUE)
+    mass_dir = coeftest(mass_model)[dim(coeftest(mass_model))[1], 1]
+    values = data.frame(site = each_site, species = species, mass_dir = mass_dir)
+    model_stats_moreyrs = rbind(model_stats_moreyrs, values)
+  }
 }
 
-all_lm_mass_actual$threshold = c("Actual")
-all_lm_mass_moreinds$threshold = c("More individuals")
-all_lm_mass_moreyrs$threshold = c("More years")
-all_lm_mass = bind_rows(all_lm_mass_actual, all_lm_mass_moreinds, all_lm_mass_moreyrs)
+model_stats_actual$threshold = c("Actual")
+model_stats_moreinds$threshold = c("More individuals")
+model_stats_moreyrs$threshold = c("More years")
+model_stats = bind_rows(model_stats_actual, model_stats_moreinds, model_stats_moreyrs)
 
-all_lm_mass = all_lm_mass %>% 
+model_stats = model_stats %>% 
   mutate(site_fancy = case_when(site == "portal" ~ "Portal", 
                                 site == "frayjorge" ~ "Fray Jorge", 
                                 site == "sevilleta" ~ "Sevilleta"))
 
 # Plot slope values for three thresholds at all sites
-slopes_plot = ggplot(all_lm_mass, aes(x = threshold, y = slope)) +
+slopes_plot = ggplot(model_stats, aes(x = threshold, y = mass_dir)) +
   geom_boxplot(color = "grey", outlier.shape = NA) +
   geom_jitter(width = 0.1) +
   ylim(c(-2, 2)) +
-  labs(x = "Threshold", y = "Mass time series slope") +
+  labs(x = "Threshold", y = "Mass time series trend") +
   facet_grid(~site_fancy)
 
 # Create dataframe of r values for each species mass over time for three threshold datasets
