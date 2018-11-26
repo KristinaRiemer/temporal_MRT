@@ -47,8 +47,8 @@ temp_mass_changes = left_join(mass_changes, temp_changes, by = c("site", "specie
 
 temp_mass_changes = left_join(temp_mass_changes, model_stats, by = c("site", "species"))
 temp_mass_changes = temp_mass_changes %>% 
-  mutate(Significant = case_when(pvalue_sig == "yes" ~ "Yes", 
-                                 pvalue_sig == "no" ~ "No"))
+  mutate(Significant = case_when(exog_pvalue_sig == "yes" ~ "Yes", 
+                                 exog_pvalue_sig == "no" ~ "No"))
 
 temp_mass_changes = temp_mass_changes %>% 
   mutate(Site = case_when(site == "portal" ~ "Portal", 
