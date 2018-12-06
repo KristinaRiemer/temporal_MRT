@@ -22,6 +22,9 @@ Rscript -e 'rmarkdown::render("scripts/cleaning/site_locations.Rmd")'
 Rscript scripts/cleaning/site_temps.R
 Rscript scripts/cleaning/species_temps.R
 
+Rscript scripts/cleaning/mass_thresholds.R
+Rscript scripts/cleaning/species_codes.R
+
 #run analyses and produce plots
 mkdir plots
 
