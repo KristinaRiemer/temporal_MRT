@@ -1,5 +1,7 @@
 #run entire project pipeline
 
+mkdir plots
+
 #download and clean data
 mkdir data
 mkdir data/temperature
@@ -26,11 +28,14 @@ Rscript scripts/cleaning/mass_thresholds.R
 Rscript scripts/cleaning/species_codes.R
 
 #run analyses and produce plots
-mkdir plots
+mkdir plots/time_series_model_diagnostics
 
-Rscript scripts/analysis/site_summary_stats.R
+Rscript scripts/analysis/time_series_models.R
 Rscript scripts/analysis/lin_reg.R
 Rscript scripts/analysis/main_fig.R
 Rscript scripts/analysis/synth_fig.R
-Rscript scripts/analysis/time_series_models.R
+
+Rscript scripts/analysis/site_summary_stats.R
 Rscript scripts/analysis/supp_all_sp.R
+Rscript scripts/analysis/repeat_species.R
+Rscript scripts/analysis/sevilleta_subsites.R
