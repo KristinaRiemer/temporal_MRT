@@ -1,24 +1,7 @@
 library(ncdf4)
 library(dplyr)
 library(ggplot2)
-
-# Functions
-# TODO: move conversion functions into their own scripts as part of package
-lon_conversion = function(coord_lon){
-  coord_lon_double = coord_lon * 2
-  if(coord_lon_double < 0){
-    grid_lon = 720 + coord_lon_double
-  } else {
-    grid_lon = coord_lon_double
-  }
-  return(grid_lon)
-}
-
-lat_conversion = function(coord_lat){
-  coord_lat_double = coord_lat * 2
-  grid_lat = 180 - coord_lat_double
-  return(grid_lat)
-}
+library(temporalMRTfxs)
 
 # Read in site locations data
 site_locations = read.csv("data/site_locations.csv")
