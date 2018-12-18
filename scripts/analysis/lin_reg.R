@@ -1,6 +1,8 @@
 library(dplyr)
 library(tidyr)
 library(broom)
+library(purrr)
+library(temporalMRTfxs)
 
 # Read in occurrences with temperature data
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
@@ -11,13 +13,7 @@ sites = unique(occurrences_with_temp$site)
 all_lm_mass = data.frame(species = factor(), slope = numeric(), site = factor(), scientific_name = factor())
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp[occurrences_with_temp$site == each_site,]
-  site_lm_mass = site_annual_masses %>% 
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ yr, data = .)), 
-           results = purrr::map(fit, tidy)) %>% 
-    unnest(results) %>% 
-    filter(term == "yr") %>% 
-    select(species, slope = estimate)
+  site_lm_mass = regression_mass_slope(site_annual_masses)
   site_lm_mass$site = as.factor(each_site)
   species_codes = site_annual_masses %>% 
     select(species, scientific_name) %>% 
