@@ -26,19 +26,8 @@ for(each_site in sites){
 all_lm_mrt = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor(), scientific_name = factor())
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp[occurrences_with_temp$site == each_site,]
-  site_lm_tidy_mrt = site_annual_masses %>%
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, tidy)) %>%
-    unnest(results) %>%
-    filter(term == "avg_temp") %>%
-    select(species, slope = estimate, p.value)
-  site_lm_glance_mrt = site_annual_masses %>%
-    nest(-species) %>%
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, glance)) %>%
-    unnest(results) %>%
-    select(species, r.squared)
+  site_lm_tidy_mrt = regression_mrt_p(site_annual_masses)
+  site_lm_glance_mrt = regression_mrt_r2(site_annual_masses)
   site_lm_mrt = site_lm_glance_mrt %>%
     full_join(site_lm_tidy_mrt, by = "species")
   site_lm_mrt = site_lm_mrt %>%

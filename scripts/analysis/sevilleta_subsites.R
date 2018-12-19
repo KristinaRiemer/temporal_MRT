@@ -7,6 +7,7 @@ library(cowplot)
 library(broom)
 library(forecast)
 library(lmtest)
+library(temporalMRTfxs)
 
 # Read in occurrences data
 # TODO: replace download with popler package method
@@ -100,19 +101,8 @@ subsites = unique(occurrences_subsites_with_temp$location)
 all_lm_mrt = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor(), scientific_name = factor())
 for(each_subsite in subsites){
   subsite_annual_masses = occurrences_subsites_with_temp[occurrences_subsites_with_temp$location == each_subsite,]
-  subsite_lm_tidy_mrt = subsite_annual_masses %>% 
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)), 
-           results = purrr::map(fit, tidy)) %>% 
-    unnest(results) %>% 
-    filter(term == "avg_temp") %>% 
-    select(species, slope = estimate, p.value)
-  subsite_lm_glance_mrt = subsite_annual_masses %>% 
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data =.)), 
-           results = purrr::map(fit, glance)) %>% 
-    unnest(results) %>% 
-    select(species, r.squared)
+  subsite_lm_tidy_mrt = regression_mrt_p(subsite_annual_masses)
+  subsite_lm_glance_mrt = regression_mrt_r2(subsite_annual_masses)
   subsite_lm_mrt = subsite_lm_glance_mrt %>% 
     full_join(subsite_lm_tidy_mrt, by = "species")
   subsite_lm_mrt = subsite_lm_mrt %>% 

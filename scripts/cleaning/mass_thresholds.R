@@ -6,6 +6,7 @@ library(purrr)
 library(cowplot)
 library(forecast)
 library(lmtest)
+library(temporalMRTfxs)
 
 # Read in temperature and occurrence data
 site_annual_temps = read.csv("data/site_annual_temps.csv")
@@ -131,19 +132,8 @@ slopes_plot = ggplot(model_stats, aes(x = threshold, y = mass_dir)) +
 all_lm_mrt_actual = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor(), scientific_name = factor())
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp_actual[occurrences_with_temp_actual$site == each_site,]
-  site_lm_tidy_mrt = site_annual_masses %>%
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, tidy)) %>%
-    unnest(results) %>%
-    filter(term == "avg_temp") %>%
-    select(species, slope = estimate, p.value)
-  site_lm_glance_mrt = site_annual_masses %>%
-    nest(-species) %>%
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, glance)) %>%
-    unnest(results) %>%
-    select(species, r.squared)
+  site_lm_tidy_mrt = regression_mrt_p(site_annual_masses)
+  site_lm_glance_mrt = regression_mrt_r2(site_annual_masses)
   site_lm_mrt = site_lm_glance_mrt %>%
     full_join(site_lm_tidy_mrt, by = "species")
   site_lm_mrt = site_lm_mrt %>%
@@ -160,19 +150,8 @@ for(each_site in sites){
 all_lm_mrt_moreinds = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor(), scientific_name = factor())
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp_moreinds[occurrences_with_temp_moreinds$site == each_site,]
-  site_lm_tidy_mrt = site_annual_masses %>%
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, tidy)) %>%
-    unnest(results) %>%
-    filter(term == "avg_temp") %>%
-    select(species, slope = estimate, p.value)
-  site_lm_glance_mrt = site_annual_masses %>%
-    nest(-species) %>%
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, glance)) %>%
-    unnest(results) %>%
-    select(species, r.squared)
+  site_lm_tidy_mrt = regression_mrt_p(site_annual_masses)
+  site_lm_glance_mrt = regression_mrt_r2(site_annual_masses)
   site_lm_mrt = site_lm_glance_mrt %>%
     full_join(site_lm_tidy_mrt, by = "species")
   site_lm_mrt = site_lm_mrt %>%
@@ -189,19 +168,8 @@ for(each_site in sites){
 all_lm_mrt_moreyrs = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor(), scientific_name = factor())
 for(each_site in sites){
   site_annual_masses = occurrences_with_temp_moreyrs[occurrences_with_temp_moreyrs$site == each_site,]
-  site_lm_tidy_mrt = site_annual_masses %>%
-    nest(-species) %>% 
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, tidy)) %>%
-    unnest(results) %>%
-    filter(term == "avg_temp") %>%
-    select(species, slope = estimate, p.value)
-  site_lm_glance_mrt = site_annual_masses %>%
-    nest(-species) %>%
-    mutate(fit = purrr::map(data, ~lm(mass_mean ~ avg_temp, data = .)),
-           results = purrr::map(fit, glance)) %>%
-    unnest(results) %>%
-    select(species, r.squared)
+  site_lm_tidy_mrt = regression_mrt_p(site_annual_masses)
+  site_lm_glance_mrt = regression_mrt_r2(site_annual_masses)
   site_lm_mrt = site_lm_glance_mrt %>%
     full_join(site_lm_tidy_mrt, by = "species")
   site_lm_mrt = site_lm_mrt %>%
