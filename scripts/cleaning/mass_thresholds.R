@@ -29,29 +29,9 @@ for(each_site in unique(occurrences$site)){
 }
 
 # Retain only species that meet 3 sets of thresholds
-occurrences_with_temp_actual = occurrences_with_temp %>% 
-  filter(!is.na(avg_temp)) %>% 
-  filter(inds >= 15) %>% 
-  group_by(site, species) %>% 
-  mutate(num_yrs = n_distinct(yr)) %>% 
-  ungroup() %>% 
-  filter(num_yrs >= 5)
-
-occurrences_with_temp_moreinds = occurrences_with_temp %>% 
-  filter(!is.na(avg_temp)) %>% 
-  filter(inds >= 30) %>% 
-  group_by(site, species) %>% 
-  mutate(num_yrs = n_distinct(yr)) %>% 
-  ungroup() %>% 
-  filter(num_yrs >= 5)
-
-occurrences_with_temp_moreyrs = occurrences_with_temp %>% 
-  filter(!is.na(avg_temp)) %>% 
-  filter(inds >= 15) %>% 
-  group_by(site, species) %>% 
-  mutate(num_yrs = n_distinct(yr)) %>% 
-  ungroup() %>% 
-  filter(num_yrs >= 10)
+occurrences_with_temp_actual = threshold_mass(occurrences_with_temp)
+occurrences_with_temp_moreinds = threshold_mass(occurrences_with_temp, min_inds = 30)
+occurrences_with_temp_moreyrs = threshold_mass(occurrences_with_temp, min_yrs = 10)
 
 # Create dataframe of slope for each species mass over time for three threshold datasets
 sites = unique(occurrences_with_temp$site)

@@ -55,20 +55,16 @@ clean_occurrences_subsites = left_join(clean_occurrences_subsites, codes_df, by 
 sevilleta_annual_temps = site_annual_temps %>% 
   filter(site == "sevilleta")
 occurrences_subsites_with_temp = left_join(clean_occurrences_subsites, sevilleta_annual_temps, by = c("yr" = "year"))
+occurrences_subsites_with_temp = rename(occurrences_subsites_with_temp, 
+                                        site = location, general_site = site)
 
 # Retain only species with five years of data and 15 individuals per each year
-occurrences_subsites_with_temp = occurrences_subsites_with_temp %>% 
-  filter(!is.na(avg_temp)) %>% 
-  filter(inds >= 15) %>% 
-  group_by(location, species) %>% 
-  mutate(num_yrs = n_distinct(yr)) %>% 
-  ungroup() %>% 
-  filter(num_yrs >= 5)
+occurrences_subsites_with_temp = threshold_mass(occurrences_subsites_with_temp)
 
 # Create dataframe of mass and mrt time series models for each species mass over time
 model_stats = data.frame()
-for(subsite in unique(occurrences_subsites_with_temp$location)){
-  subsite_occurrences = occurrences_subsites_with_temp[occurrences_subsites_with_temp$location == subsite,]
+for(subsite in unique(occurrences_subsites_with_temp$site)){
+  subsite_occurrences = occurrences_subsites_with_temp[occurrences_subsites_with_temp$site == subsite,]
   min_year = min(subsite_occurrences$yr)
   max_year = max(subsite_occurrences$yr)
   for(species in unique(subsite_occurrences$species)){
@@ -97,10 +93,10 @@ model_stats = model_stats %>%
                                      mass_pvalue_adjust > 0.05 ~ "no"))
 
 # Create dataframe of r and p values for each species temp-mass relationship
-subsites = unique(occurrences_subsites_with_temp$location)
+subsites = unique(occurrences_subsites_with_temp$site)
 all_lm_mrt = data.frame(species = factor(), r.squared = numeric(), slope = numeric(), p.value = numeric(), r = numeric(), site = factor(), scientific_name = factor())
 for(each_subsite in subsites){
-  subsite_annual_masses = occurrences_subsites_with_temp[occurrences_subsites_with_temp$location == each_subsite,]
+  subsite_annual_masses = occurrences_subsites_with_temp[occurrences_subsites_with_temp$site == each_subsite,]
   subsite_lm_tidy_mrt = regression_mrt_p(subsite_annual_masses)
   subsite_lm_glance_mrt = regression_mrt_r2(subsite_annual_masses)
   subsite_lm_mrt = subsite_lm_glance_mrt %>% 
@@ -119,7 +115,7 @@ all_lm_mrt = left_join(all_lm_mrt, model_stats, by = c("subsite", "species"))
 
 # Create plots for each subsite
 three_plots_df = occurrences_subsites_with_temp %>% 
-  group_by(location) %>% 
+  group_by(site) %>% 
   nest() %>% 
   mutate(
     temp_by_year = purrr::map(data, ~ggplot(., aes(yr, avg_temp)) +
@@ -163,8 +159,8 @@ mass_plot_df = model_stats %>%
   )
 
 # Combine plots for each subsite, then combine all subsite plots
-plots_df = left_join(three_plots_df, mrt_plot_df, by = c("location" = "subsite"))
-plots_df = left_join(plots_df, mass_plot_df, by = c("location" = "subsite"))
+plots_df = left_join(three_plots_df, mrt_plot_df, by = c("site" = "subsite"))
+plots_df = left_join(plots_df, mass_plot_df, by = c("site" = "subsite"))
 
 plots_df$combined1 = purrr::pmap(list(plots_df$temp_by_year, plots_df$mass_by_year, 
                                       plots_df$slope_dist), 

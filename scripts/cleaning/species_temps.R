@@ -1,4 +1,5 @@
 library(dplyr)
+library(temporalMRTfxs)
 
 # TODO: simplify this script
 
@@ -23,13 +24,7 @@ for(each_site in unique(occurrences$site)){
 }
 
 # Retain only species with five years of data and 15 individuals per each year
-occurrences_with_temp = occurrences_with_temp %>% 
-  filter(!is.na(avg_temp)) %>% 
-  filter(inds >= 15) %>% 
-  group_by(site, species) %>% 
-  mutate(num_yrs = n_distinct(yr)) %>% 
-  ungroup() %>% 
-  filter(num_yrs >= 5)
+occurrences_with_temp = threshold_mass(occurrences_with_temp)
 
 # Save combined occurrences/temperature data
 occurrences_with_temp_path = "data/occurrences_with_temp.csv"
